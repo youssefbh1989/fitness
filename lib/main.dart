@@ -123,9 +123,32 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             initialRoute: AppRouter.initialRoute,
             onGenerateRoute: AppRouter.onGenerateRoute,
             navigatorKey: _navigatorKey,
+            // Configure supported locales
+            supportedLocales: const [
+              Locale('en', ''), // English
+              Locale('es', ''), // Spanish
+              Locale('fr', ''), // French
+              Locale('de', ''), // German
+              Locale('ja', ''), // Japanese
+              Locale('zh', ''), // Chinese
+              Locale('ru', ''), // Russian
+              Locale('pt', ''), // Portuguese
+              Locale('it', ''), // Italian
+              Locale('ar', ''), // Arabic
+            ],
+            // Localization delegates
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            // Determine the app locale based on device locale
+            locale: state is SettingsLoaded ? 
+              Locale(state.settings.language) : null,
             navigatorObservers: [
               // Track screen views for analytics
-              NavigatorObserver()
+              _analyticsService.getAnalyticsObserver(),
             ],
             builder: (context, child) {
               SizeConfig().init(context);
