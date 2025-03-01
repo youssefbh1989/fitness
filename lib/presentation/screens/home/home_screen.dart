@@ -99,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  }
   
   Widget _buildDashboardTab() {
     final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
@@ -531,6 +530,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Text('Try Again'),
                 ),
               ],
+            ),
+          );
+        }
+        
+        return const Center(child: Text('No workouts data'));
+      },
+    );
+  }
 
   Widget _buildNutritionTab() {
     return SingleChildScrollView(
@@ -948,42 +955,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     : Colors.grey.shade200,
               );
             }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-            ),
-          );
-        }
-        
-        return const Center(child: Text('No workouts data'));
-      },
-    );
-  }
-
-  Widget _buildNutritionTab() {
-    // Placeholder for now - would implement nutrition tab with proper data
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 64,
-            color: Theme.of(context).primaryColor,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Nutrition Coming Soon',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Track your calories, macros, and meal plans',
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
           ),
         ],
       ),
