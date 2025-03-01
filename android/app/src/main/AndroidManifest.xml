@@ -37,15 +37,8 @@
                     android:host="fitbody.app"
                     android:pathPrefix="/open" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="fitbody"
-                    android:host="open" />
-            </intent-filter>
-            
+            <!-- The duplicate intent filter has been removed -->
+
             <!-- This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"

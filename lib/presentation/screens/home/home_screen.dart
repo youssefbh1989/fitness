@@ -19,10 +19,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Selected tab index
   int _selectedIndex = 0;
-  
+
   // List of tab widgets
   final List<Widget> _tabs = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -33,11 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
       _buildNutritionTab(),
       _buildProfileTab(),
     ]);
-    
+
     // Initialize blocs with proper error handling
     _initializeBlocs();
   }
-  
+
   void _initializeBlocs() {
     try {
       context.read<UserBloc>().add(GetUserProfileEvent());
@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       // Handle any initialization errors
       print('Error initializing blocs: $e');
-      
+
       // Retry logic could be added here if needed
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
@@ -54,14 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
     final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: SafeArea(
         child: _tabs[_selectedIndex],
@@ -99,11 +99,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  
+
   Widget _buildDashboardTab() {
     final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
     final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
-    
+
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
         horizontal: screenWidth * 0.05,
@@ -134,14 +134,14 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, state) {
         String userName = "Fitness Enthusiast";
         String profileImage = 'assets/images/profile_placeholder.png';
-        
+
         if (state is UserLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is UserLoaded) {
           // Split name and use first part or default if empty
           final nameParts = state.user.name.split(' ');
           userName = nameParts.isNotEmpty ? nameParts[0] : userName;
-          
+
           // Use user profile image if available
           if (state.user.profileImageUrl != null && state.user.profileImageUrl!.isNotEmpty) {
             profileImage = state.user.profileImageUrl!;
@@ -337,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               }
-              
+
               return SizedBox(
                 height: SizeConfig.screenHeight! * 0.20,
                 child: ListView.builder(
@@ -377,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildChallenges() {
     final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
     final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -431,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildArticles() {
     final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -472,7 +472,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
-}
 
   Widget _buildWorkoutsTab() {
     return BlocBuilder<WorkoutBloc, WorkoutState>(
@@ -500,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
           }
-          
+
           return ListView.builder(
             padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
             itemCount: state.workouts.length,
@@ -533,433 +532,39 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
-        
+
         return const Center(child: Text('No workouts data'));
       },
     );
   }
 
   Widget _buildNutritionTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+    // Placeholder for now - would implement nutrition tab with proper data
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Icon(
+            Icons.restaurant_menu,
+            size: 64,
+            color: Theme.of(context).primaryColor,
+          ),
+          const SizedBox(height: 16),
           Text(
-            'My Nutrition',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            'Nutrition Coming Soon',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-          SizedBox(height: SizeConfig.screenHeight! * 0.03),
-          
-          // Daily Calorie Summary Card
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Today\'s Calories',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNutritionStat(
-                      title: 'Goal',
-                      value: '2,200',
-                      unit: 'kcal',
-                      color: Colors.blue,
-                    ),
-                    _buildNutritionStat(
-                      title: 'Consumed',
-                      value: '1,450',
-                      unit: 'kcal',
-                      color: Colors.green,
-                    ),
-                    _buildNutritionStat(
-                      title: 'Remaining',
-                      value: '750',
-                      unit: 'kcal',
-                      color: Colors.orange,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                LinearProgressIndicator(
-                  value: 0.65,
-                  backgroundColor: Colors.grey.shade300,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                  borderRadius: BorderRadius.circular(10),
-                  minHeight: 10,
-                ),
-              ],
-            ),
-          ),
-          
-          SizedBox(height: SizeConfig.screenHeight! * 0.03),
-          
-          // Macros Summary
+          const SizedBox(height: 8),
           Text(
-            'Macronutrients',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMacroCard(
-                title: 'Protein',
-                value: '95g',
-                target: '120g',
-                color: Colors.red.shade400,
-                percent: 0.79,
-              ),
-              _buildMacroCard(
-                title: 'Carbs',
-                value: '180g',
-                target: '220g',
-                color: Colors.blue.shade400,
-                percent: 0.81,
-              ),
-              _buildMacroCard(
-                title: 'Fat',
-                value: '45g',
-                target: '70g',
-                color: Colors.yellow.shade700,
-                percent: 0.64,
-              ),
-            ],
-          ),
-          
-          SizedBox(height: SizeConfig.screenHeight! * 0.03),
-          
-          // Meal Tracking
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Today\'s Meals',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/meal-planning');
-                },
-                icon: Icon(Icons.add, size: 18),
-                label: Text('Add Meal'),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: TextStyle(fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildMealCard(
-            title: 'Breakfast',
-            time: '07:30 AM',
-            calories: '450',
-            foods: ['Oatmeal with berries', 'Greek yogurt', 'Coffee'],
-          ),
-          SizedBox(height: 12),
-          _buildMealCard(
-            title: 'Lunch',
-            time: '12:15 PM',
-            calories: '650',
-            foods: ['Grilled chicken salad', 'Whole grain bread', 'Apple'],
-          ),
-          SizedBox(height: 12),
-          _buildMealCard(
-            title: 'Snack',
-            time: '03:30 PM',
-            calories: '180',
-            foods: ['Protein shake', 'Almonds'],
-          ),
-          SizedBox(height: 12),
-          _buildMealCard(
-            title: 'Dinner',
-            time: '07:00 PM',
-            calories: '620',
-            foods: ['Salmon', 'Quinoa', 'Steamed vegetables'],
-            isPlanned: true,
-          ),
-          
-          SizedBox(height: SizeConfig.screenHeight! * 0.03),
-          
-          // Water Tracking
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Water Tracker',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '5/8 glasses',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            // Decrease water count logic
-                          },
-                          icon: Icon(Icons.remove_circle_outline, color: Colors.blue),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            // Increase water count logic
-                          },
-                          icon: Icon(Icons.add_circle_outline, color: Colors.blue),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(8, (index) {
-                    return Icon(
-                      Icons.water_drop,
-                      color: index < 5 ? Colors.blue : Colors.blue.withOpacity(0.3),
-                      size: 28,
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
-          
-          SizedBox(height: SizeConfig.screenHeight! * 0.05),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildNutritionStat({
-    required String title,
-    required String value,
-    required String unit,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-          ),
-        ),
-        SizedBox(height: 4),
-        RichText(
-          text: TextSpan(
-            text: value,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-            children: [
-              TextSpan(
-                text: ' $unit',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildMacroCard({
-    required String title,
-    required String value,
-    required String target,
-    required Color color,
-    required double percent,
-  }) {
-    return Container(
-      width: SizeConfig.screenWidth! * 0.28,
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          SizedBox(height: 8),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              CircularProgressIndicator(
-                value: percent,
-                backgroundColor: Colors.grey.shade300,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-                strokeWidth: 6,
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6),
-          Text(
-            'of $target',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 12,
-            ),
+            'Track your calories, macros, and meal plans',
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildMealCard({
-    required String title,
-    required String time,
-    required String calories,
-    required List<String> foods,
-    bool isPlanned = false,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isPlanned 
-            ? Colors.grey.withOpacity(0.1) 
-            : Theme.of(context).cardColor,
-        border: Border.all(
-          color: isPlanned 
-              ? Colors.grey.shade400 
-              : Theme.of(context).primaryColor.withOpacity(0.3),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Row(
-                children: [
-                  if (isPlanned)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'Planned',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
-                  SizedBox(width: 8),
-                  Text(
-                    time,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(
-                Icons.local_fire_department,
-                color: Colors.orange,
-                size: 18,
-              ),
-              SizedBox(width: 4),
-              Text(
-                '$calories kcal',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: foods.map((food) {
-              return Chip(
-                label: Text(
-                  food,
-                  style: TextStyle(fontSize: 12),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade200,
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildProfileTab() {
     return BlocBuilder<UserBloc, UserState>(
@@ -968,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (state is UserLoaded) {
           final user = state.user;
-          
+
           return SingleChildScrollView(
             padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
             child: Column(
@@ -1073,12 +678,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
-        
+
         return const Center(child: Text('No profile data'));
       },
     );
   }
-  
+
   Widget _buildProfileMenuItem({
     required IconData icon,
     required String title,
@@ -1091,3 +696,5 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: onTap,
     );
   }
+
+}
