@@ -520,3 +520,294 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/size_config.dart';
+import '../../../domain/entities/workout.dart';
+import '../../blocs/workout/workout_bloc.dart';
+import '../../widgets/custom_button.dart';
+
+class WorkoutDetailScreen extends StatelessWidget {
+  final Workout workout;
+  
+  const WorkoutDetailScreen({Key? key, required this.workout}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          _buildAppBar(context),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWorkoutInfo(context),
+                  SizedBox(height: SizeConfig.screenHeight! * 0.03),
+                  _buildWorkoutDescription(context),
+                  SizedBox(height: SizeConfig.screenHeight! * 0.03),
+                  _buildExercisesList(context),
+                  SizedBox(height: SizeConfig.screenHeight! * 0.05),
+                  CustomButton(
+                    text: 'Start Workout',
+                    onPressed: () {
+                      // Navigate to workout session screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Starting ${workout.title} workout'))
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: SizeConfig.screenHeight! * 0.3,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          workout.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        background: Hero(
+          tag: 'workout_image_${workout.id}',
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                workout.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/workout_placeholder.jpg',
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            workout.isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: workout.isFavorite ? Colors.red : Colors.white,
+          ),
+          onPressed: () {
+            // Toggle favorite status
+            context.read<WorkoutBloc>().add(ToggleWorkoutFavoriteEvent(workout.id));
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.share, color: Colors.white),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Sharing workout...'))
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWorkoutInfo(BuildContext context) {
+    return Row(
+      children: [
+        _buildInfoItem(
+          context, 
+          Icons.access_time,
+          '${workout.duration} min',
+          'Duration'
+        ),
+        _buildInfoItem(
+          context, 
+          Icons.fitness_center,
+          '${workout.exercises.length}',
+          'Exercises'
+        ),
+        _buildInfoItem(
+          context, 
+          Icons.local_fire_department,
+          '${workout.caloriesBurn}',
+          'Calories'
+        ),
+        _buildInfoItem(
+          context, 
+          Icons.signal_cellular_alt,
+          workout.level,
+          'Level'
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoItem(BuildContext context, IconData icon, String value, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: Theme.of(context).primaryColor,
+            size: 24,
+          ),
+          SizedBox(height: SizeConfig.screenHeight! * 0.01),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkoutDescription(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Description',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: SizeConfig.screenHeight! * 0.01),
+        Text(
+          workout.description,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExercisesList(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Exercises',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: SizeConfig.screenHeight! * 0.02),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: workout.exercises.length,
+          itemBuilder: (context, index) {
+            final exercise = workout.exercises[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            exercise.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '${exercise.sets} sets x ${exercise.reps} reps',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.play_circle_outline),
+                      color: Theme.of(context).primaryColor,
+                      onPressed: () {
+                        // Show exercise demo
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(exercise.name),
+                            content: const Text('Exercise demonstration will be shown here.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
