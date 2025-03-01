@@ -69,3 +69,41 @@ enum AchievementCategory {
   community,
   special,
 }
+import 'package:equatable/equatable.dart';
+
+class Achievement extends Equatable {
+  final String id;
+  final String name;
+  final String description;
+  final String category;
+  final bool isUnlocked;
+  final int progress; // 0-100
+  final String? progressDescription;
+  final DateTime? dateUnlocked;
+  final String? iconPath;
+
+  const Achievement({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.category,
+    required this.isUnlocked,
+    required this.progress,
+    this.progressDescription,
+    this.dateUnlocked,
+    this.iconPath,
+  });
+
+  @override
+  List<Object?> get props => [
+    id, 
+    name, 
+    description, 
+    category, 
+    isUnlocked, 
+    progress, 
+    progressDescription, 
+    dateUnlocked,
+    iconPath,
+  ];
+}
