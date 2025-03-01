@@ -472,3 +472,91 @@ Future<void> init() async {
     getAchievementsUseCase: sl(),
   ));
 }
+import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/datasources/local/app_database.dart';
+import '../../data/repositories/achievement_repository_impl.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/nutrition_repository_impl.dart';
+import '../../data/repositories/user_repository_impl.dart';
+import '../../data/repositories/workout_repository_impl.dart';
+import '../../domain/repositories/achievement_repository.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/nutrition_repository.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/workout_repository.dart';
+import '../../presentation/blocs/achievement/achievement_bloc.dart';
+import '../../presentation/blocs/auth/auth_bloc.dart';
+import '../../presentation/blocs/nutrition/nutrition_bloc.dart';
+import '../../presentation/blocs/settings/settings_bloc.dart';
+import '../../presentation/blocs/user/user_bloc.dart';
+import '../../presentation/blocs/workout/workout_bloc.dart';
+import '../../presentation/blocs/workout_tracker/workout_tracker_bloc.dart';
+import '../../core/utils/analytics_service.dart';
+import '../../core/utils/notification_service.dart';
+
+final GetIt sl = GetIt.instance;
+
+Future<void> init() async {
+  // External
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+  sl.registerSingleton<AppDatabase>(AppDatabase());
+  
+  // Utils
+  sl.registerSingleton<AnalyticsService>(AnalyticsService());
+  sl.registerSingleton<NotificationService>(NotificationService());
+  
+  // Repositories
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sharedPreferences: sl()),
+  );
+  
+  sl.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(database: sl(), sharedPreferences: sl()),
+  );
+  
+  sl.registerLazySingleton<WorkoutRepository>(
+    () => WorkoutRepositoryImpl(database: sl()),
+  );
+  
+  sl.registerLazySingleton<AchievementRepository>(
+    () => AchievementRepositoryImpl(database: sl()),
+  );
+  
+  sl.registerLazySingleton<NutritionRepository>(
+    () => NutritionRepositoryImpl(database: sl()),
+  );
+  
+  // BLoCs
+  sl.registerFactory<AuthBloc>(
+    () => AuthBloc(authRepository: sl(), userRepository: sl()),
+  );
+  
+  sl.registerFactory<UserBloc>(
+    () => UserBloc(userRepository: sl()),
+  );
+  
+  sl.registerFactory<WorkoutBloc>(
+    () => WorkoutBloc(workoutRepository: sl()),
+  );
+  
+  sl.registerFactory<WorkoutTrackerBloc>(
+    () => WorkoutTrackerBloc(workoutRepository: sl()),
+  );
+  
+  sl.registerFactory<AchievementBloc>(
+    () => AchievementBloc(
+      achievementRepository: sl(),
+      userRepository: sl(),
+    ),
+  );
+  
+  sl.registerFactory<NutritionBloc>(
+    () => NutritionBloc(nutritionRepository: sl()),
+  );
+  
+  sl.registerFactory<SettingsBloc>(
+    () => SettingsBloc(sharedPreferences: sl()),
+  );
+}

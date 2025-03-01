@@ -30,3 +30,30 @@ class UnlockAchievementEvent extends AchievementEvent {
 }
 
 class GetTotalPointsEvent extends AchievementEvent {}
+part of 'achievement_bloc.dart';
+
+abstract class AchievementEvent extends Equatable {
+  const AchievementEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LoadAchievementsEvent extends AchievementEvent {}
+
+class CheckForNewAchievementsEvent extends AchievementEvent {}
+
+class UpdateAchievementProgressEvent extends AchievementEvent {
+  final String achievementId;
+  final double progress;
+  final int currentValue;
+  
+  const UpdateAchievementProgressEvent({
+    required this.achievementId,
+    required this.progress,
+    required this.currentValue,
+  });
+  
+  @override
+  List<Object> get props => [achievementId, progress, currentValue];
+}

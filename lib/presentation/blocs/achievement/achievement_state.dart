@@ -58,3 +58,39 @@ class AchievementError extends AchievementState {
   @override
   List<Object?> get props => [message];
 }
+part of 'achievement_bloc.dart';
+
+abstract class AchievementState extends Equatable {
+  const AchievementState();
+  
+  @override
+  List<Object> get props => [];
+}
+
+class AchievementInitial extends AchievementState {}
+
+class AchievementLoading extends AchievementState {}
+
+class AchievementLoaded extends AchievementState {
+  final List<Achievement> earnedAchievements;
+  final List<AchievementProgress> inProgressAchievements;
+  final List<Achievement>? newlyEarnedAchievements;
+  
+  const AchievementLoaded({
+    required this.earnedAchievements,
+    required this.inProgressAchievements,
+    this.newlyEarnedAchievements,
+  });
+  
+  @override
+  List<Object> get props => [earnedAchievements, inProgressAchievements];
+}
+
+class AchievementError extends AchievementState {
+  final String message;
+  
+  const AchievementError({required this.message});
+  
+  @override
+  List<Object> get props => [message];
+}

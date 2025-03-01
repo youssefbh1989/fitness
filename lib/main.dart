@@ -1,95 +1,73 @@
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'core/di/injection_container.dart' as di;
-import 'core/theme/app_theme.dart';
+import 'core/utils/error_handler.dart';
+import 'core/utils/notification_service.dart';
+import 'core/utils/analytics_service.dart';
 import 'presentation/routes/app_router.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/user/user_bloc.dart';
 import 'presentation/blocs/workout/workout_bloc.dart';
+import 'presentation/blocs/settings/settings_bloc.dart';
+import 'presentation/blocs/achievement/achievement_bloc.dart';
+import 'presentation/blocs/nutrition/nutrition_bloc.dart';
+import 'presentation/blocs/workout_tracker/workout_tracker_bloc.dart';
+import 'core/theme/app_theme.dart';
+import 'core/utils/size_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  // Set system overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
-
-  // Initialize dependency injection
+  
+  // Initialize dependencies
   await di.init();
-  runApp(const MyApp());
+  
+  // Initialize notification service
+  await di.sl<NotificationService>().init();
+  
+  // Track app open
+  await di.sl<AnalyticsService>().trackAppOpen();
+  
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => di.sl<AuthBloc>(),
-        ),
-        BlocProvider<UserBloc>(
-          create: (_) => di.sl<UserBloc>(),
-        ),
-        BlocProvider<WorkoutBloc>(
-          create: (_) => di.sl<WorkoutBloc>(),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'My Fitness App',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/',
-        debugShowCheckedModeBanner: false,
-      ),
-    );
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final _errorHandler = ErrorHandler();
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
   }
-}
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'core/di/injection_container.dart' as di;
-import 'core/theme/app_theme.dart';
-import 'presentation/routes/app_router.dart';
-import 'presentation/blocs/auth/auth_bloc.dart';
-import 'presentation/blocs/user/user_bloc.dart';
-import 'presentation/blocs/workout/workout_bloc.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize dependency injection
-  await di.init();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _errorHandler.dispose();
+    super.dispose();
+  }
   
-  // Check if onboarding is completed
-  final prefs = await SharedPreferences.getInstance();
-  final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      di.sl<AnalyticsService>().trackAppBackground();
+    } else if (state == AppLifecycleState.resumed) {
+      di.sl<AnalyticsService>().trackAppForeground();
+    }
+  }
   
-  runApp(MyApp(onboardingCompleted: onboardingCompleted));
-}
-
-class MyApp extends StatelessWidget {
-  final bool onboardingCompleted;
-  
-  const MyApp({Key? key, required this.onboardingCompleted}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -103,29 +81,66 @@ class MyApp extends StatelessWidget {
         BlocProvider<WorkoutBloc>(
           create: (context) => di.sl<WorkoutBloc>(),
         ),
+        BlocProvider<SettingsBloc>(
+          create: (context) => di.sl<SettingsBloc>()..add(LoadSettingsEvent()),
+        ),
+        BlocProvider<AchievementBloc>(
+          create: (context) => di.sl<AchievementBloc>(),
+        ),
+        BlocProvider<NutritionBloc>(
+          create: (context) => di.sl<NutritionBloc>(),
+        ),
+        BlocProvider<WorkoutTrackerBloc>(
+          create: (context) => di.sl<WorkoutTrackerBloc>(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'FitBody',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        debugShowCheckedModeBanner: false,
-        onGenerateRoute: AppRouter.generateRoute,
-        initialRoute: '/',
-        builder: (context, child) {
-          return BlocListener<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is Authenticated) {
-                Navigator.of(context).pushReplacementNamed('/home');
-              } else if (state is Unauthenticated) {
-                if (onboardingCompleted) {
-                  Navigator.of(context).pushReplacementNamed('/login');
-                } else {
-                  Navigator.of(context).pushReplacementNamed('/onboarding');
-                }
-              }
+      child: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, state) {
+          bool isDarkMode = false;
+          
+          if (state is SettingsLoaded) {
+            isDarkMode = state.settings.darkMode;
+          }
+          
+          return MaterialApp(
+            title: 'Fitness App',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            initialRoute: AppRouter.initialRoute,
+            onGenerateRoute: AppRouter.onGenerateRoute,
+            navigatorObservers: [
+              // Track screen views for analytics
+              NavigatorObserver()
+            ],
+            builder: (context, child) {
+              SizeConfig().init(context);
+              
+              // Error handling UI wrapper
+              return StreamBuilder<AppError>(
+                stream: _errorHandler.errorStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    // Show error snackbar
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        ErrorHandler.showErrorSnackBar(
+                          context,
+                          snapshot.data!.friendlyMessage,
+                        );
+                      }
+                    });
+                  }
+                  
+                  // Ensure proper text scaling
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                    child: child!,
+                  );
+                },
+              );
             },
-            child: child!,
           );
         },
       ),

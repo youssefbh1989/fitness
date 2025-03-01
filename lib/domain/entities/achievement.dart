@@ -107,3 +107,86 @@ class Achievement extends Equatable {
     iconPath,
   ];
 }
+import 'package:equatable/equatable.dart';
+
+class Achievement extends Equatable {
+  final String id;
+  final String title;
+  final String description;
+  final String? imageUrl;
+  final String criteria;
+  final int xpPoints;
+  final DateTime? dateEarned;
+  
+  const Achievement({
+    required this.id,
+    required this.title,
+    required this.description,
+    this.imageUrl,
+    required this.criteria,
+    required this.xpPoints,
+    this.dateEarned,
+  });
+  
+  @override
+  List<Object?> get props => [id, title, description, imageUrl, criteria, xpPoints, dateEarned];
+  
+  bool get isEarned => dateEarned != null;
+  
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'criteria': criteria,
+      'xpPoints': xpPoints,
+      'dateEarned': dateEarned?.toIso8601String(),
+    };
+  }
+  
+  factory Achievement.fromMap(Map<String, dynamic> map) {
+    return Achievement(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      imageUrl: map['imageUrl'],
+      criteria: map['criteria'],
+      xpPoints: map['xpPoints'],
+      dateEarned: map['dateEarned'] != null ? DateTime.parse(map['dateEarned']) : null,
+    );
+  }
+}
+
+class AchievementProgress extends Equatable {
+  final Achievement achievement;
+  final double progress; // Value between 0.0 and 1.0
+  final int currentValue;
+  final int targetValue;
+  
+  const AchievementProgress({
+    required this.achievement,
+    required this.progress,
+    required this.currentValue,
+    required this.targetValue,
+  });
+  
+  @override
+  List<Object> get props => [achievement, progress, currentValue, targetValue];
+  
+  AchievementProgress copyWith({
+    Achievement? achievement,
+    double? progress,
+    int? currentValue,
+    int? targetValue,
+  }) {
+    return AchievementProgress(
+      achievement: achievement ?? this.achievement,
+      progress: progress ?? this.progress,
+      currentValue: currentValue ?? this.currentValue,
+      targetValue: targetValue ?? this.targetValue,
+    );
+  }
+  
+  bool get isCompleted => progress >= 1.0;
+}

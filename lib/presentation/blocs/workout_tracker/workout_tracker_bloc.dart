@@ -313,3 +313,122 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
     }
   }
 }
+import 'dart:async';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../domain/entities/exercise_set.dart';
+import '../../../domain/entities/workout.dart';
+import '../../../domain/repositories/workout_repository.dart';
+
+part 'workout_tracker_event.dart';
+part 'workout_tracker_state.dart';
+
+class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> {
+  final WorkoutRepository workoutRepository;
+  
+  WorkoutTrackerBloc({required this.workoutRepository}) : super(WorkoutTrackerInitial()) {
+    on<StartWorkoutEvent>(_onStartWorkout);
+    on<CompleteExerciseSetEvent>(_onCompleteExerciseSet);
+    on<UpdateExerciseSetEvent>(_onUpdateExerciseSet);
+    on<CompleteWorkoutEvent>(_onCompleteWorkout);
+    on<CancelWorkoutEvent>(_onCancelWorkout);
+  }
+
+  Future<void> _onStartWorkout(
+    StartWorkoutEvent event,
+    Emitter<WorkoutTrackerState> emit,
+  ) async {
+    emit(WorkoutTrackerLoading());
+    try {
+      final workout = event.workout;
+      emit(WorkoutTrackerActive(
+        workout: workout,
+        currentExerciseIndex: 0,
+        completedSets: [],
+        startTime: DateTime.now(),
+      ));
+    } catch (e) {
+      emit(WorkoutTrackerError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onCompleteExerciseSet(
+    CompleteExerciseSetEvent event,
+    Emitter<WorkoutTrackerState> emit,
+  ) async {
+    if (state is WorkoutTrackerActive) {
+      final currentState = state as WorkoutTrackerActive;
+      try {
+        final updatedSets = List<ExerciseSet>.from(currentState.completedSets)
+          ..add(event.exerciseSet);
+        
+        emit(WorkoutTrackerActive(
+          workout: currentState.workout,
+          currentExerciseIndex: event.moveToNextExercise 
+              ? currentState.currentExerciseIndex + 1 
+              : currentState.currentExerciseIndex,
+          completedSets: updatedSets,
+          startTime: currentState.startTime,
+        ));
+      } catch (e) {
+        emit(WorkoutTrackerError(message: e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onUpdateExerciseSet(
+    UpdateExerciseSetEvent event,
+    Emitter<WorkoutTrackerState> emit,
+  ) async {
+    if (state is WorkoutTrackerActive) {
+      final currentState = state as WorkoutTrackerActive;
+      try {
+        final updatedSets = List<ExerciseSet>.from(currentState.completedSets);
+        final index = updatedSets.indexWhere((set) => set.id == event.exerciseSet.id);
+        
+        if (index != -1) {
+          updatedSets[index] = event.exerciseSet;
+        }
+        
+        emit(WorkoutTrackerActive(
+          workout: currentState.workout,
+          currentExerciseIndex: currentState.currentExerciseIndex,
+          completedSets: updatedSets,
+          startTime: currentState.startTime,
+        ));
+      } catch (e) {
+        emit(WorkoutTrackerError(message: e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onCompleteWorkout(
+    CompleteWorkoutEvent event,
+    Emitter<WorkoutTrackerState> emit,
+  ) async {
+    if (state is WorkoutTrackerActive) {
+      final currentState = state as WorkoutTrackerActive;
+      emit(WorkoutTrackerSaving());
+      
+      try {
+        final completedWorkout = await workoutRepository.saveCompletedWorkout(
+          workout: currentState.workout,
+          completedSets: currentState.completedSets,
+          startTime: currentState.startTime,
+          endTime: DateTime.now(),
+        );
+        
+        emit(WorkoutTrackerCompleted(completedWorkout: completedWorkout));
+      } catch (e) {
+        emit(WorkoutTrackerError(message: e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onCancelWorkout(
+    CancelWorkoutEvent event,
+    Emitter<WorkoutTrackerState> emit,
+  ) async {
+    emit(WorkoutTrackerInitial());
+  }
+}
