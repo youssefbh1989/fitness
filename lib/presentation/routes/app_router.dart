@@ -209,3 +209,85 @@ class AppRouter {
     }
   }
 }
+import 'package:flutter/material.dart';
+
+import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/auth/login_page.dart';
+import '../screens/auth/register_page.dart';
+import '../screens/splash/splash_page.dart';
+import '../screens/home/home_screen.dart';
+import '../screens/workout/workout_detail_screen.dart';
+import '../screens/workout/create_workout_screen.dart';
+import '../screens/challenge/challenge_detail_screen.dart';
+import '../screens/article/article_detail_screen.dart';
+import '../screens/settings/settings_screen.dart';
+import '../screens/profile/edit_profile_screen.dart';
+import '../screens/nutrition/nutrition_detail_screen.dart';
+import '../screens/exercise/exercise_library_screen.dart';
+import '../screens/search/search_screen.dart';
+
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/':
+        return MaterialPageRoute(builder: (_) => const SplashPage());
+      
+      case '/onboarding':
+        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+      
+      case '/login':
+        return MaterialPageRoute(builder: (_) => const LoginPage());
+      
+      case '/register':
+        return MaterialPageRoute(builder: (_) => const RegisterPage());
+      
+      case '/home':
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      
+      case '/workout-detail':
+        final workout = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => WorkoutDetailScreen(workout: workout),
+        );
+      
+      case '/create-workout':
+        return MaterialPageRoute(builder: (_) => const CreateWorkoutScreen());
+      
+      case '/challenge-detail':
+        final challenge = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => ChallengeDetailScreen(challenge: challenge),
+        );
+        
+      case '/article-detail':
+        final article = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => ArticleDetailScreen(article: article),
+        );
+      
+      case '/settings':
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      
+      case '/edit-profile':
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      
+      case '/nutrition-detail':
+        return MaterialPageRoute(builder: (_) => const NutritionDetailScreen());
+      
+      case '/exercise-library':
+        return MaterialPageRoute(builder: (_) => const ExerciseLibraryScreen());
+      
+      case '/search':
+        return MaterialPageRoute(builder: (_) => const SearchScreen());
+      
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(
+              child: Text('No route defined for ${settings.name}'),
+            ),
+          ),
+        );
+    }
+  }
+}

@@ -1043,3 +1043,640 @@ class Food {
     required this.imageUrl,
   });
 }
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../../core/utils/size_config.dart';
+
+class NutritionDetailScreen extends StatefulWidget {
+  const NutritionDetailScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NutritionDetailScreen> createState() => _NutritionDetailScreenState();
+}
+
+class _NutritionDetailScreenState extends State<NutritionDetailScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  
+  // Mock data
+  final List<MealEntry> _todayMeals = [
+    MealEntry(
+      name: "Breakfast",
+      time: "8:00 AM",
+      calories: 450,
+      foods: [
+        FoodItem(name: "Oatmeal", quantity: "1 bowl", calories: 150),
+        FoodItem(name: "Banana", quantity: "1 medium", calories: 105),
+        FoodItem(name: "Greek Yogurt", quantity: "1 cup", calories: 150),
+        FoodItem(name: "Honey", quantity: "1 tbsp", calories: 45),
+      ],
+    ),
+    MealEntry(
+      name: "Lunch",
+      time: "12:30 PM",
+      calories: 650,
+      foods: [
+        FoodItem(name: "Grilled Chicken", quantity: "150g", calories: 250),
+        FoodItem(name: "Brown Rice", quantity: "1 cup", calories: 215),
+        FoodItem(name: "Broccoli", quantity: "100g", calories: 55),
+        FoodItem(name: "Olive Oil", quantity: "1 tbsp", calories: 120),
+      ],
+    ),
+    MealEntry(
+      name: "Snack",
+      time: "4:00 PM",
+      calories: 200,
+      foods: [
+        FoodItem(name: "Apple", quantity: "1 medium", calories: 95),
+        FoodItem(name: "Almonds", quantity: "25g", calories: 150),
+      ],
+    ),
+  ];
+  
+  final int _dailyCalorieGoal = 2000;
+  int _consumedCalories = 0;
+  double _proteinPercentage = 0.30;
+  double _carbsPercentage = 0.50;
+  double _fatPercentage = 0.20;
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    
+    // Calculate consumed calories
+    _consumedCalories = _todayMeals.fold(0, (sum, meal) => sum + meal.calories);
+  }
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Nutrition Tracker'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Today'),
+            Tab(text: 'History'),
+            Tab(text: 'Goals'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildTodayTab(),
+          _buildHistoryTab(),
+          _buildGoalsTab(),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddMealDialog();
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+  
+  Widget _buildTodayTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCalorieCard(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildMacronutrientsCard(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildMealsList(),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildCalorieCard() {
+    final remainingCalories = _dailyCalorieGoal - _consumedCalories;
+    final progress = _consumedCalories / _dailyCalorieGoal;
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+        child: Column(
+          children: [
+            Text(
+              'Daily Calories',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            SizedBox(height: SizeConfig.screenHeight! * 0.02),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildCalorieInfo('Goal', _dailyCalorieGoal.toString()),
+                _buildCalorieInfo('Consumed', _consumedCalories.toString()),
+                _buildCalorieInfo('Remaining', remainingCalories.toString()),
+              ],
+            ),
+            SizedBox(height: SizeConfig.screenHeight! * 0.02),
+            LinearProgressIndicator(
+              value: progress.clamp(0, 1),
+              minHeight: 10,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress > 1 ? Colors.red : Theme.of(context).primaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildCalorieInfo(String title, String value) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildMacronutrientsCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+        child: Column(
+          children: [
+            Text(
+              'Macronutrients',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            SizedBox(height: SizeConfig.screenHeight! * 0.02),
+            SizedBox(
+              height: SizeConfig.screenHeight! * 0.15,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: PieChart(
+                      PieChartData(
+                        sections: [
+                          PieChartSectionData(
+                            value: _proteinPercentage * 100,
+                            color: Colors.red,
+                            title: 'Protein',
+                            radius: 50,
+                            titleStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          PieChartSectionData(
+                            value: _carbsPercentage * 100,
+                            color: Colors.blue,
+                            title: 'Carbs',
+                            radius: 50,
+                            titleStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          PieChartSectionData(
+                            value: _fatPercentage * 100,
+                            color: Colors.yellow,
+                            title: 'Fat',
+                            radius: 50,
+                            titleStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 30,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildMacroItem('Protein', _proteinPercentage * _consumedCalories / 4, Colors.red),
+                        SizedBox(height: SizeConfig.screenHeight! * 0.01),
+                        _buildMacroItem('Carbs', _carbsPercentage * _consumedCalories / 4, Colors.blue),
+                        SizedBox(height: SizeConfig.screenHeight! * 0.01),
+                        _buildMacroItem('Fat', _fatPercentage * _consumedCalories / 9, Colors.yellow),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildMacroItem(String name, double grams, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          name,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const Spacer(),
+        Text(
+          '${grams.toInt()}g',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildMealsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Today\'s Meals',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        SizedBox(height: SizeConfig.screenHeight! * 0.02),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _todayMeals.length,
+          itemBuilder: (context, index) {
+            final meal = _todayMeals[index];
+            return _buildMealCard(meal);
+          },
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildMealCard(MealEntry meal) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ExpansionTile(
+        title: Text(meal.name),
+        subtitle: Text('${meal.time} · ${meal.calories} calories'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Divider(),
+                ...meal.foods.map((food) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      Text(food.name),
+                      const SizedBox(width: 8),
+                      Text(
+                        food.quantity,
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${food.calories} cal',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                )).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildHistoryTab() {
+    return Padding(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Calorie History',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          SizedBox(height: SizeConfig.screenHeight! * 0.02),
+          SizedBox(
+            height: SizeConfig.screenHeight! * 0.3,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(show: true),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      getTitlesWidget: (value, meta) {
+                        const titles = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                        final index = value.toInt();
+                        if (index >= 0 && index < titles.length) {
+                          return Text(titles[index]);
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        return Text(value.toInt().toString());
+                      },
+                      reservedSize: 40,
+                    ),
+                  ),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(show: true),
+                minX: 0,
+                maxX: 6,
+                minY: 0,
+                maxY: 2500,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 1500),
+                      FlSpot(1, 1850),
+                      FlSpot(2, 2000),
+                      FlSpot(3, 1800),
+                      FlSpot(4, 1900),
+                      FlSpot(5, 2200),
+                      FlSpot(6, 1300),
+                    ],
+                    isCurved: true,
+                    color: Theme.of(context).primaryColor,
+                    barWidth: 4,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(show: true),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  // Goal line
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 2000),
+                      FlSpot(6, 2000),
+                    ],
+                    isCurved: false,
+                    color: Colors.red,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(show: false),
+                    dashArray: [5, 5],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: SizeConfig.screenHeight! * 0.04),
+          const Text('Weekly Summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          SizedBox(height: SizeConfig.screenHeight! * 0.02),
+          _buildSummaryCard('Average Daily Calories', '1793'),
+          _buildSummaryCard('Total Calories This Week', '12550'),
+          _buildSummaryCard('Days On Target', '4 out of 7'),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSummaryCard(String title, String value) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(title),
+            Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildGoalsTab() {
+    return Padding(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Nutrition Goals', style: Theme.of(context).textTheme.titleLarge),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildGoalSettingCard(
+            'Daily Calorie Target',
+            '$_dailyCalorieGoal calories',
+            Icons.whatshot,
+            Colors.orange,
+          ),
+          _buildGoalSettingCard(
+            'Protein Goal',
+            '${(_proteinPercentage * 100).toInt()}% of calories',
+            Icons.fitness_center,
+            Colors.red,
+          ),
+          _buildGoalSettingCard(
+            'Carbohydrates Goal',
+            '${(_carbsPercentage * 100).toInt()}% of calories',
+            Icons.grain,
+            Colors.blue,
+          ),
+          _buildGoalSettingCard(
+            'Fat Goal',
+            '${(_fatPercentage * 100).toInt()}% of calories',
+            Icons.opacity,
+            Colors.yellow[700]!,
+          ),
+          _buildGoalSettingCard(
+            'Water Intake Goal',
+            '8 glasses',
+            Icons.water_drop,
+            Colors.blue[300]!,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildGoalSettingCard(String title, String value, IconData icon, Color color) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.2),
+          child: Icon(icon, color: color),
+        ),
+        title: Text(title),
+        subtitle: Text(value),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () {
+            // Show edit dialog
+          },
+        ),
+      ),
+    );
+  }
+  
+  void _showAddMealDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Add Meal',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Meal Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Time',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Total Calories',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Foods',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            // Food items would be dynamically added here
+            ElevatedButton.icon(
+              onPressed: () {
+                // Add food item
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Add Food Item'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Save Meal'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MealEntry {
+  final String name;
+  final String time;
+  final int calories;
+  final List<FoodItem> foods;
+
+  MealEntry({
+    required this.name,
+    required this.time,
+    required this.calories,
+    required this.foods,
+  });
+}
+
+class FoodItem {
+  final String name;
+  final String quantity;
+  final int calories;
+
+  FoodItem({
+    required this.name,
+    required this.quantity,
+    required this.calories,
+  });
+}
