@@ -193,3 +193,58 @@ class User {
     );
   }
 }
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final String? profileImageUrl;
+  final int age;
+  final double weight;
+  final double height;
+  final String gender;
+  final List<String> goals;
+  final String fitnessLevel;
+  final bool isPremium;
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.profileImageUrl,
+    required this.age,
+    required this.weight,
+    required this.height,
+    required this.gender,
+    required this.goals,
+    required this.fitnessLevel,
+    required this.isPremium,
+  });
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? profileImageUrl,
+    int? age,
+    double? weight,
+    double? height,
+    String? gender,
+    List<String>? goals,
+    String? fitnessLevel,
+    bool? isPremium,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      age: age ?? this.age,
+      weight: weight ?? this.weight,
+      height: height ?? this.height,
+      gender: gender ?? this.gender,
+      goals: goals ?? this.goals,
+      fitnessLevel: fitnessLevel ?? this.fitnessLevel,
+      isPremium: isPremium ?? this.isPremium,
+    );
+  }
+}

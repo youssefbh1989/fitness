@@ -1442,3 +1442,396 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/size_config.dart';
+import '../../blocs/settings/settings_bloc.dart';
+import '../../blocs/settings/settings_event.dart';
+import '../../blocs/settings/settings_state.dart';
+import '../../widgets/custom_app_bar.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    
+    return Scaffold(
+      appBar: CustomAppBar(
+        title: 'Settings',
+        showBackButton: true,
+      ),
+      body: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, state) {
+          return ListView(
+            padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+            children: [
+              _buildSectionHeader(context, 'App Preferences'),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.brightness_6,
+                title: 'Dark Mode',
+                subtitle: 'Toggle dark mode theme',
+                trailing: Switch(
+                  value: state.darkMode,
+                  onChanged: (value) {
+                    context.read<SettingsBloc>().add(
+                          ToggleDarkModeEvent(darkMode: value),
+                        );
+                  },
+                  activeColor: Theme.of(context).primaryColor,
+                ),
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.language,
+                title: 'Language',
+                subtitle: 'Change app language',
+                trailing: const Text('English'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/language_settings');
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.straighten,
+                title: 'Units',
+                subtitle: 'Choose between metric or imperial',
+                trailing: Text(
+                  state.useMetricSystem ? 'Metric' : 'Imperial',
+                ),
+                onTap: () {
+                  _showUnitsDialog(context, state.useMetricSystem);
+                },
+              ),
+              _buildSectionHeader(context, 'Notifications'),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.notifications,
+                title: 'Push Notifications',
+                subtitle: 'Manage push notifications',
+                trailing: Switch(
+                  value: state.notificationsEnabled,
+                  onChanged: (value) {
+                    context.read<SettingsBloc>().add(
+                          ToggleNotificationsEvent(enabled: value),
+                        );
+                  },
+                  activeColor: Theme.of(context).primaryColor,
+                ),
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.notifications_active,
+                title: 'Notification Settings',
+                subtitle: 'Customize notification preferences',
+                onTap: () {
+                  Navigator.pushNamed(context, '/notification_settings');
+                },
+              ),
+              _buildSectionHeader(context, 'Data Management'),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.sync,
+                title: 'Sync Settings',
+                subtitle: 'Manage data synchronization',
+                onTap: () {
+                  Navigator.pushNamed(context, '/sync_settings');
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.import_export,
+                title: 'Export & Import Data',
+                subtitle: 'Backup and restore your data',
+                onTap: () {
+                  Navigator.pushNamed(context, '/data_export_import');
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.delete_forever,
+                title: 'Clear App Data',
+                subtitle: 'Reset the app and clear all data',
+                titleColor: Colors.red,
+                onTap: () {
+                  _showClearDataDialog(context);
+                },
+              ),
+              _buildSectionHeader(context, 'Account'),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.account_circle,
+                title: 'Account Settings',
+                subtitle: 'Manage your account details',
+                onTap: () {
+                  // Navigate to account settings
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.security,
+                title: 'Privacy & Security',
+                subtitle: 'Manage your privacy and security settings',
+                onTap: () {
+                  // Navigate to privacy settings
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.exit_to_app,
+                title: 'Logout',
+                titleColor: Colors.red,
+                onTap: () {
+                  _showLogoutDialog(context);
+                },
+              ),
+              _buildSectionHeader(context, 'Support'),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.help,
+                title: 'Help & Support',
+                subtitle: 'Get help and contact support',
+                onTap: () {
+                  Navigator.pushNamed(context, '/help_support');
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.policy,
+                title: 'Terms & Privacy Policy',
+                subtitle: 'Read our terms and privacy policy',
+                onTap: () {
+                  // Navigate to terms and policy
+                },
+              ),
+              _buildSettingItem(
+                context: context,
+                icon: Icons.info,
+                title: 'About',
+                subtitle: 'App version and information',
+                trailing: const Text('v1.0.0'),
+                onTap: () {
+                  // Show about dialog
+                  _showAboutDialog(context);
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildSettingItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    Color? titleColor,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Colors.grey.withOpacity(0.2),
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: titleColor,
+              ),
+        ),
+        subtitle: subtitle != null
+            ? Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+              )
+            : null,
+        trailing: trailing ??
+            (onTap != null
+                ? const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                  )
+                : null),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _showUnitsDialog(BuildContext context, bool isMetric) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Measurement Units'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<bool>(
+                title: const Text('Metric (kg, cm)'),
+                value: true,
+                groupValue: isMetric,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(
+                        ChangeUnitSystemEvent(useMetricSystem: true),
+                      );
+                },
+              ),
+              RadioListTile<bool>(
+                title: const Text('Imperial (lb, in)'),
+                value: false,
+                groupValue: isMetric,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  context.read<SettingsBloc>().add(
+                        ChangeUnitSystemEvent(useMetricSystem: false),
+                      );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('CANCEL'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showClearDataDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Clear App Data'),
+          content: const Text(
+            'This will reset the app and delete all your data. This action cannot be undone. Are you sure you want to continue?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // Implement clear data functionality
+                context.read<SettingsBloc>().add(ClearAppDataEvent());
+              },
+              child: const Text(
+                'CLEAR DATA',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // Implement logout functionality
+                context.read<SettingsBloc>().add(LogoutEvent());
+              },
+              child: const Text('LOGOUT'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('About FitBody'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Version: 1.0.0'),
+              const SizedBox(height: 8),
+              const Text('FitBody is a comprehensive fitness and wellness app designed to help you achieve your fitness goals.'),
+              const SizedBox(height: 16),
+              const Text('© 2023 FitBody App. All rights reserved.'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('CLOSE'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

@@ -534,3 +534,728 @@ class _NutritionScreenState extends State<NutritionScreen> with SingleTickerProv
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/size_config.dart';
+
+class NutritionScreen extends StatefulWidget {
+  const NutritionScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NutritionScreen> createState() => _NutritionScreenState();
+}
+
+class _NutritionScreenState extends State<NutritionScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  int _waterIntake = 0;
+  final int _waterGoal = 8;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Nutrition'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Search functionality
+            },
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Daily'),
+            Tab(text: 'Meals'),
+            Tab(text: 'Water'),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddMealDialog();
+        },
+        child: const Icon(Icons.add),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildDailyTab(),
+          _buildMealsTab(),
+          _buildWaterTab(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCaloriesSummary(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildMacronutrients(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildTodaysMeals(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCaloriesSummary() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildCalorieItem(title: 'Goal', value: '2,000', color: Colors.blue),
+          _buildCalorieItem(title: 'Food', value: '1,456', color: Colors.green),
+          _buildCalorieItem(title: 'Exercise', value: '350', color: Colors.orange),
+          _buildCalorieItem(title: 'Remaining', value: '894', color: Theme.of(context).primaryColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCalorieItem({required String title, required String value, required Color color}) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacronutrients() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Macronutrients',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildMacroItem(
+                title: 'Protein',
+                value: '85g',
+                goal: '120g',
+                progress: 0.7,
+                color: Colors.red,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: _buildMacroItem(
+                title: 'Carbs',
+                value: '180g',
+                goal: '250g',
+                progress: 0.72,
+                color: Colors.blue,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: _buildMacroItem(
+                title: 'Fat',
+                value: '45g',
+                goal: '65g',
+                progress: 0.69,
+                color: Colors.orange,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacroItem({
+    required String title,
+    required String value,
+    required String goal,
+    required double progress,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: color.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            borderRadius: BorderRadius.circular(4),
+            minHeight: 8,
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                goal,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodaysMeals() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Today\'s Meals',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        SizedBox(height: 12),
+        _buildMealCard(
+          title: 'Breakfast',
+          time: '8:00 AM',
+          calories: 450,
+          items: ['Greek Yogurt', 'Oatmeal with Fruits', 'Coffee'],
+        ),
+        SizedBox(height: 12),
+        _buildMealCard(
+          title: 'Lunch',
+          time: '1:00 PM',
+          calories: 650,
+          items: ['Grilled Chicken Salad', 'Whole Grain Bread', 'Apple'],
+        ),
+        SizedBox(height: 12),
+        _buildMealCard(
+          title: 'Snack',
+          time: '4:00 PM',
+          calories: 180,
+          items: ['Protein Bar', 'Mixed Nuts'],
+        ),
+        SizedBox(height: 12),
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.add_circle_outline,
+                color: Theme.of(context).primaryColor,
+              ),
+              SizedBox(width: 12),
+              Text(
+                'Add Dinner',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMealCard({
+    required String title,
+    required String time,
+    required int calories,
+    required List<String> items,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                time,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Divider(),
+          SizedBox(height: 8),
+          ...items.map((item) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.circle, size: 8, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text(item),
+                  ],
+                ),
+              )),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                '$calories calories',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMealsTab() {
+    List<String> mealCategories = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+    
+    return ListView.builder(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      itemCount: mealCategories.length,
+      itemBuilder: (context, index) {
+        return _buildMealCategoryCard(mealCategories[index]);
+      },
+    );
+  }
+
+  Widget _buildMealCategoryCard(String category) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            category,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Suggested Meals',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+              Text(
+                'Favorites',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                4,
+                (index) => Container(
+                  margin: EdgeInsets.only(right: 12),
+                  width: 140,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/nutrition_${index + 1}.jpg',
+                          height: 100,
+                          width: 140,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: 140,
+                              color: Colors.grey.shade300,
+                              child: Icon(Icons.image_not_supported, color: Colors.white),
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        getMealSuggestion(category, index),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        '${150 + (index * 50)} calories',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () {
+              _showAddMealDialog();
+            },
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add),
+                SizedBox(width: 8),
+                Text('Add $category'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String getMealSuggestion(String category, int index) {
+    if (category == 'Breakfast') {
+      List<String> suggestions = [
+        'Greek Yogurt with Honey',
+        'Avocado Toast with Eggs',
+        'Oatmeal with Berries',
+        'Protein Smoothie Bowl'
+      ];
+      return suggestions[index];
+    } else if (category == 'Lunch') {
+      List<String> suggestions = [
+        'Chicken Wrap with Veggies',
+        'Quinoa Salad Bowl',
+        'Turkey & Avocado Sandwich',
+        'Mediterranean Bowl'
+      ];
+      return suggestions[index];
+    } else if (category == 'Dinner') {
+      List<String> suggestions = [
+        'Grilled Salmon with Veggies',
+        'Lean Beef Stir Fry',
+        'Vegetable & Chicken Curry',
+        'Zucchini Pasta with Meatballs'
+      ];
+      return suggestions[index];
+    } else {
+      List<String> suggestions = [
+        'Greek Yogurt & Berries',
+        'Protein Bar',
+        'Apple with Almond Butter',
+        'Veggie Sticks with Hummus'
+      ];
+      return suggestions[index];
+    }
+  }
+
+  Widget _buildWaterTab() {
+    return Padding(
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: 20),
+          Text(
+            'Daily Water Intake',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Goal: 8 glasses (2L)',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey,
+                ),
+          ),
+          SizedBox(height: 40),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                height: 200,
+                width: 200,
+                child: CircularProgressIndicator(
+                  value: _waterIntake / _waterGoal,
+                  strokeWidth: 15,
+                  backgroundColor: Colors.blue.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+              ),
+              Column(
+                children: [
+                  Text(
+                    '$_waterIntake / $_waterGoal',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  Text(
+                    'glasses',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: _waterIntake > 0
+                    ? () {
+                        setState(() {
+                          _waterIntake--;
+                        });
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  shape: CircleBorder(),
+                  padding: EdgeInsets.all(16),
+                  backgroundColor: Colors.red,
+                ),
+                child: Icon(Icons.remove, color: Colors.white),
+              ),
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: _waterIntake < _waterGoal
+                    ? () {
+                        setState(() {
+                          _waterIntake++;
+                        });
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  shape: CircleBorder(),
+                  padding: EdgeInsets.all(16),
+                  backgroundColor: Colors.blue,
+                ),
+                child: Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          ),
+          SizedBox(height: 30),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue),
+                    SizedBox(width: 12),
+                    Text(
+                      'Why water matters',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Staying hydrated helps your body regulate temperature, prevent infections, deliver nutrients to cells, and keep organs functioning properly.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddMealDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(20),
+          height: SizeConfig.screenHeight! * 0.8,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Add Food',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search for food',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Recent Foods',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              SizedBox(height: 12),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 10,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text('Food Item ${index + 1}'),
+                      subtitle: Text('${(index + 1) * 50} calories'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.add_circle_outline),
+                        onPressed: () {
+                          // Add food to log
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

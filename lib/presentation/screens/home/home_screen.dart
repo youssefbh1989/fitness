@@ -539,30 +539,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNutritionTab() {
-    // Placeholder for now - would implement nutrition tab with proper data
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 64,
-            color: Theme.of(context).primaryColor,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Nutrition Coming Soon',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Track your calories, macros, and meal plans',
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    return const NutritionScreen();
   }
 
 
@@ -623,7 +600,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.settings,
                   title: 'Settings',
                   onTap: () {
-                    // Navigate to settings screen
+                    Navigator.pushNamed(context, '/settings');
                   },
                 ),
                 _buildProfileMenuItem(

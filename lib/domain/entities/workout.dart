@@ -288,3 +288,68 @@ class Workout {
     );
   }
 }
+import 'exercise.dart';
+
+class Workout {
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final int difficulty; // 1-3 (beginner, intermediate, advanced)
+  final int duration; // in minutes
+  final List<Exercise> exercises;
+  final List<String> equipment;
+  final int caloriesBurn;
+  final double rating;
+  final bool isFavorite;
+  final String category;
+  final String trainer;
+
+  Workout({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.difficulty,
+    required this.duration,
+    required this.exercises,
+    required this.equipment,
+    required this.caloriesBurn,
+    required this.rating,
+    this.isFavorite = false,
+    required this.category,
+    required this.trainer,
+  });
+
+  Workout copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? imageUrl,
+    int? difficulty,
+    int? duration,
+    List<Exercise>? exercises,
+    List<String>? equipment,
+    int? caloriesBurn,
+    double? rating,
+    bool? isFavorite,
+    String? category,
+    String? trainer,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      difficulty: difficulty ?? this.difficulty,
+      duration: duration ?? this.duration,
+      exercises: exercises ?? this.exercises,
+      equipment: equipment ?? this.equipment,
+      caloriesBurn: caloriesBurn ?? this.caloriesBurn,
+      rating: rating ?? this.rating,
+      isFavorite: isFavorite ?? this.isFavorite,
+      category: category ?? this.category,
+      trainer: trainer ?? this.trainer,
+    );
+  }
+}
