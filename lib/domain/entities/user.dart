@@ -146,3 +146,50 @@ class User extends Equatable {
     profileImageUrl
   ];
 }
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final String? profileImageUrl;
+  final String? bio;
+  final int? age;
+  final double? height;
+  final double? weight;
+  final String? fitnessLevel;
+  
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.profileImageUrl,
+    this.bio,
+    this.age,
+    this.height,
+    this.weight,
+    this.fitnessLevel,
+  });
+  
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? profileImageUrl,
+    String? bio,
+    int? age,
+    double? height,
+    double? weight,
+    String? fitnessLevel,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      bio: bio ?? this.bio,
+      age: age ?? this.age,
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+      fitnessLevel: fitnessLevel ?? this.fitnessLevel,
+    );
+  }
+}

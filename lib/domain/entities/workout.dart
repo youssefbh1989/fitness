@@ -235,3 +235,56 @@ class Exercise extends Equatable {
     restTime
   ];
 }
+import 'exercise.dart';
+
+class Workout {
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final String difficulty;
+  final int duration;
+  final int calories;
+  final bool isFavorite;
+  final List<String>? equipment;
+  final List<Exercise> exercises;
+  
+  Workout({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.difficulty,
+    required this.duration,
+    required this.calories,
+    required this.isFavorite,
+    this.equipment,
+    required this.exercises,
+  });
+  
+  Workout copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? imageUrl,
+    String? difficulty,
+    int? duration,
+    int? calories,
+    bool? isFavorite,
+    List<String>? equipment,
+    List<Exercise>? exercises,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      difficulty: difficulty ?? this.difficulty,
+      duration: duration ?? this.duration,
+      calories: calories ?? this.calories,
+      isFavorite: isFavorite ?? this.isFavorite,
+      equipment: equipment ?? this.equipment,
+      exercises: exercises ?? this.exercises,
+    );
+  }
+}

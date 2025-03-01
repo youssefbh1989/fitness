@@ -80,3 +80,46 @@ class ExerciseSummary {
     required this.imageUrl,
   });
 }
+class Exercise {
+  final String id;
+  final String name;
+  final int sets;
+  final int reps;
+  final int duration;
+  final String imageUrl;
+  final String? targetMuscle;
+  final String? instructions;
+  
+  Exercise({
+    required this.id,
+    required this.name,
+    required this.sets,
+    required this.reps,
+    required this.duration,
+    required this.imageUrl,
+    this.targetMuscle,
+    this.instructions,
+  });
+  
+  Exercise copyWith({
+    String? id,
+    String? name,
+    int? sets,
+    int? reps,
+    int? duration,
+    String? imageUrl,
+    String? targetMuscle,
+    String? instructions,
+  }) {
+    return Exercise(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      sets: sets ?? this.sets,
+      reps: reps ?? this.reps,
+      duration: duration ?? this.duration,
+      imageUrl: imageUrl ?? this.imageUrl,
+      targetMuscle: targetMuscle ?? this.targetMuscle,
+      instructions: instructions ?? this.instructions,
+    );
+  }
+}
