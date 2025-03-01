@@ -61,3 +61,50 @@ class Meal extends Equatable {
     createdAt,
   ];
 }
+class Meal {
+  final String id;
+  final String name;
+  final int calories;
+  final String type; // Breakfast, Lunch, Dinner, Snack
+  final String time;
+  final String day;
+  final String imageUrl;
+  final List<String> ingredients;
+  final Map<String, int> macros; // protein, carbs, fat
+
+  Meal({
+    required this.id,
+    required this.name,
+    required this.calories,
+    required this.type,
+    required this.time,
+    required this.day,
+    required this.imageUrl,
+    required this.ingredients,
+    required this.macros,
+  });
+
+  Meal copyWith({
+    String? id,
+    String? name,
+    int? calories,
+    String? type,
+    String? time,
+    String? day,
+    String? imageUrl,
+    List<String>? ingredients,
+    Map<String, int>? macros,
+  }) {
+    return Meal(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      calories: calories ?? this.calories,
+      type: type ?? this.type,
+      time: time ?? this.time,
+      day: day ?? this.day,
+      imageUrl: imageUrl ?? this.imageUrl,
+      ingredients: ingredients ?? this.ingredients,
+      macros: macros ?? this.macros,
+    );
+  }
+}

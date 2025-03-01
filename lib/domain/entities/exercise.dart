@@ -37,3 +37,46 @@ class Exercise extends Equatable {
     muscleGroup, videoUrl, instructions
   ];
 }
+class Exercise {
+  final String id;
+  final String name;
+  final String description;
+  final String equipment;
+  final String difficulty;
+  final String primaryMuscle;
+  final List<String> secondaryMuscles;
+  final List<String> instructions;
+  final List<String> tips;
+  final String imageUrl;
+  final String videoUrl;
+  final int estimatedCaloriesBurn;
+  final List<ExerciseSummary> similarExercises;
+  
+  Exercise({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.equipment,
+    required this.difficulty,
+    required this.primaryMuscle,
+    required this.secondaryMuscles,
+    required this.instructions,
+    required this.tips,
+    required this.imageUrl,
+    required this.videoUrl,
+    required this.estimatedCaloriesBurn,
+    required this.similarExercises,
+  });
+}
+
+class ExerciseSummary {
+  final String id;
+  final String name;
+  final String imageUrl;
+  
+  ExerciseSummary({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+  });
+}

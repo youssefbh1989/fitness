@@ -473,3 +473,493 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> with Single
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/size_config.dart';
+import '../../../domain/entities/exercise.dart';
+import '../../blocs/exercise/exercise_bloc.dart';
+import '../../widgets/video_player_widget.dart';
+
+class ExerciseDetailScreen extends StatefulWidget {
+  final String exerciseId;
+  
+  const ExerciseDetailScreen({
+    Key? key,
+    required this.exerciseId,
+  }) : super(key: key);
+
+  @override
+  State<ExerciseDetailScreen> createState() => _ExerciseDetailScreenState();
+}
+
+class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    context.read<ExerciseBloc>().add(FetchExerciseDetailsEvent(id: widget.exerciseId));
+  }
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
+    
+    return Scaffold(
+      body: BlocBuilder<ExerciseBloc, ExerciseState>(
+        builder: (context, state) {
+          if (state is ExerciseLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ExerciseDetailLoaded) {
+            final exercise = state.exercise;
+            return _buildExerciseDetails(exercise);
+          } else if (state is ExerciseError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${state.message}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<ExerciseBloc>().add(
+                        FetchExerciseDetailsEvent(id: widget.exerciseId),
+                      );
+                    },
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          return const Center(child: Text('No exercise data available'));
+        },
+      ),
+    );
+  }
+
+  Widget _buildExerciseDetails(Exercise exercise) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 240,
+          pinned: true,
+          flexibleSpace: FlexibleSpaceBar(
+            title: Text(
+              exercise.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    offset: Offset(1, 1),
+                    blurRadius: 3.0,
+                    color: Color.fromARGB(150, 0, 0, 0),
+                  ),
+                ],
+              ),
+            ),
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  exercise.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/images/exercise_placeholder.jpg',
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.favorite_border),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Added to favorites')),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () {
+                // Implement sharing
+              },
+            ),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Equipment and muscles worked section
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoCard(
+                        'Equipment',
+                        exercise.equipment,
+                        Icons.fitness_center,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoCard(
+                        'Primary Muscle',
+                        exercise.primaryMuscle,
+                        Icons.accessibility_new,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Difficulty and calories section
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoCard(
+                        'Difficulty',
+                        exercise.difficulty,
+                        Icons.trending_up,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoCard(
+                        'Est. Calories',
+                        '${exercise.estimatedCaloriesBurn}/min',
+                        Icons.local_fire_department,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Tab bar
+                TabBar(
+                  controller: _tabController,
+                  labelColor: Theme.of(context).primaryColor,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: const [
+                    Tab(text: 'INSTRUCTIONS'),
+                    Tab(text: 'VIDEO'),
+                    Tab(text: 'TIPS'),
+                  ],
+                ),
+                
+                // Tab content
+                SizedBox(
+                  height: 300,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Instructions tab
+                      _buildInstructionsTab(exercise.instructions),
+                      
+                      // Video tab
+                      _buildVideoTab(exercise.videoUrl),
+                      
+                      // Tips tab
+                      _buildTipsTab(exercise.tips),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Similar exercises section
+                Text(
+                  'Similar Exercises',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: exercise.similarExercises.length,
+                    itemBuilder: (context, index) {
+                      final similarExercise = exercise.similarExercises[index];
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to this exercise
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ExerciseDetailScreen(
+                                exerciseId: similarExercise.id,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 100,
+                          margin: const EdgeInsets.only(right: 16),
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  similarExercise.imageUrl,
+                                  height: 80,
+                                  width: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 80,
+                                      width: 100,
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(Icons.image_not_supported),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                similarExercise.name,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                maxLines: 2,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Add to workout button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('ADD TO WORKOUT'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () {
+                      // Show dialog to add to workout
+                      _showAddToWorkoutDialog(exercise);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value, IconData icon) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: Theme.of(context).primaryColor,
+              size: 24,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstructionsTab(List<String> instructions) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: instructions.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).primaryColor,
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(instructions[index]),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoTab(String videoUrl) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: videoUrl.isNotEmpty
+          ? VideoPlayerWidget(videoUrl: videoUrl)
+          : const Center(
+              child: Text('No video available for this exercise'),
+            ),
+    );
+  }
+
+  Widget _buildTipsTab(List<String> tips) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: tips.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.lightbulb_outline,
+                color: Colors.amber,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(tips[index]),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddToWorkoutDialog(Exercise exercise) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add to Workout'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Existing workouts dropdown would go here
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: 'Select Workout',
+                border: OutlineInputBorder(),
+              ),
+              value: 'Full Body Workout',
+              items: const [
+                DropdownMenuItem(value: 'Full Body Workout', child: Text('Full Body Workout')),
+                DropdownMenuItem(value: 'Upper Body Focus', child: Text('Upper Body Focus')),
+                DropdownMenuItem(value: 'Leg Day', child: Text('Leg Day')),
+              ],
+              onChanged: (value) {},
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Sets',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Reps',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Exercise added to workout'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+}

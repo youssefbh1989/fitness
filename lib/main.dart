@@ -141,6 +141,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 },
               );
             },
+            // Handle deep links
+            onGenerateInitialRoutes: (String initialRoute) {
+              // This is called when app is started from a deep link
+              if (initialRoute != '/') {
+                return [
+                  AppRouter.onGenerateRoute(RouteSettings(name: initialRoute))
+                ];
+              }
+              return [
+                AppRouter.onGenerateRoute(const RouteSettings(name: '/'))
+              ];
+            },
           );
         },
       ),
