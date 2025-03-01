@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/datasources/user_data_source.dart';
+import '../../data/datasources/user_data_source_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/workout_repository_impl.dart';
 import '../../data/repositories/nutrition_repository_impl.dart';
 import '../../data/repositories/progress_repository_impl.dart';
@@ -62,6 +64,7 @@ import '../../presentation/blocs/progress/progress_bloc.dart';
 import '../../presentation/blocs/notification/notification_bloc.dart';
 import '../../presentation/blocs/community/community_bloc.dart';
 import '../../presentation/blocs/achievement/achievement_bloc.dart';
+import '../../domain/entities/user.dart'; // Assuming User entity exists
 
 
 final sl = GetIt.instance;
@@ -69,11 +72,14 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+  sl.registerLazySingleton(() => sharedPreferences);
+
+  // Data Sources
+  sl.registerLazySingleton<UserDataSource>(() => UserDataSourceImpl(sharedPreferences: sl()));
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sharedPreferences: sl()));
-  sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(sharedPreferences: sl()));
+  sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(dataSource: sl()));
   sl.registerLazySingleton<WorkoutRepository>(() => WorkoutRepositoryImpl());
   sl.registerLazySingleton<ExerciseRepository>(() => ExerciseRepositoryImpl());
   sl.registerLazySingleton<NutritionRepository>(() => NutritionRepositoryImpl());
@@ -118,22 +124,16 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetAchievementsByCategoryUseCase(sl()));
 
   // BLoCs
-  sl.registerFactory(() => AuthBloc(
-        loginUseCase: sl(),
-        signupUseCase: sl(),
-      ));
+  sl.registerFactory(() => AuthBloc(loginUseCase: sl(), signupUseCase: sl()));
   sl.registerFactory(() => OnboardingBloc());
-  sl.registerFactory(() => UserBloc(
-        getUserProfileUseCase: sl(),
-        updateUserProfileUseCase: sl(),
-      ));
+  sl.registerFactory(() => UserBloc(getUserProfileUseCase: sl()));
   sl.registerFactory(() => WorkoutBloc(
-    getWorkoutsUseCase: sl(),
-    getWorkoutByIdUseCase: sl(),
-    getWorkoutsByCategoryUseCase: sl(),
-    getFeaturedWorkoutsUseCase: sl(),
-    getWorkoutCategoriesUseCase: sl(),
-  ));
+        getWorkoutsUseCase: sl(),
+        getWorkoutByIdUseCase: sl(),
+        getWorkoutsByCategoryUseCase: sl(),
+        getFeaturedWorkoutsUseCase: sl(),
+        getWorkoutCategoriesUseCase: sl(),
+      ));
   sl.registerFactory(() => ExerciseBloc(
         getExercisesUseCase: sl(),
         getExerciseByIdUseCase: sl(),
@@ -141,74 +141,169 @@ Future<void> init() async {
         getExerciseCategoriesUseCase: sl(),
       ));
   sl.registerFactory(() => NutritionBloc(
-    getMealPlansUseCase: sl(),
-    getNutritionByCategoryUseCase: sl(),
-    getMealPlanDetailsUseCase: sl(),
-    createMealPlanUseCase: sl(),
-  ));
-  sl.registerFactory(() => ProgressBloc(
-        getProgressHistory: sl(),
-        addProgressEntry: sl(),
+        getMealPlansUseCase: sl(),
+        getNutritionByCategoryUseCase: sl(),
+        getMealPlanDetailsUseCase: sl(),
+        createMealPlanUseCase: sl(),
       ));
-  sl.registerFactory(
-    () => NotificationBloc(
-      getNotifications: sl(),
-      markAsRead: sl(),
-      markAllAsRead: sl(),
-    ),
-  );
-  sl.registerFactory(
-    () => CommunityBloc(
-      getPostsUseCase: sl(),
-      createPostUseCase: sl(),
-      likePostUseCase: sl(),
-      unlikePostUseCase: sl(),
-      getUserPostsUseCase: sl(),
-    ),
-  );
+  sl.registerFactory(() => ProgressBloc(getProgressHistory: sl(), addProgressEntry: sl()));
+  sl.registerFactory(() => NotificationBloc(
+        getNotifications: sl(),
+        markAsRead: sl(),
+        markAllAsRead: sl(),
+      ));
+  sl.registerFactory(() => CommunityBloc(
+        getPostsUseCase: sl(),
+        createPostUseCase: sl(),
+        likePostUseCase: sl(),
+        unlikePostUseCase: sl(),
+        getUserPostsUseCase: sl(),
+      ));
   sl.registerFactory(() => AchievementBloc(
         getAchievementsUseCase: sl(),
         getAchievementsByCategoryUseCase: sl(),
       ));
 }
-import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fitbody/data/repositories/auth_repository_impl.dart';
-import 'package:fitbody/data/repositories/workout_repository_impl.dart';
-import 'package:fitbody/domain/repositories/auth_repository.dart';
-import 'package:fitbody/domain/repositories/workout_repository.dart';
-import 'package:fitbody/domain/usecases/auth/login_usecase.dart';
-import 'package:fitbody/domain/usecases/auth/register_usecase.dart';
-import 'package:fitbody/domain/usecases/workout/get_workouts_usecase.dart';
-import 'package:fitbody/presentation/bloc/auth/auth_bloc.dart';
-import 'package:fitbody/presentation/bloc/workout/workout_bloc.dart';
 
-final GetIt sl = GetIt.instance;
+//Data Layer
 
-Future<void> init() async {
-  // External dependencies
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+//Data Sources
+abstract class UserDataSource {
+  Future<User> getUserProfile();
+  Future<void> updateUserProfile(User user);
+}
 
-  // Repositories
-  sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<WorkoutRepository>(
-    () => WorkoutRepositoryImpl(),
-  );
+class UserDataSourceImpl implements UserDataSource {
+  final SharedPreferences sharedPreferences;
 
-  // Use cases
-  sl.registerLazySingleton(() => LoginUseCase(sl()));
-  sl.registerLazySingleton(() => RegisterUseCase(sl()));
-  sl.registerLazySingleton(() => GetWorkoutsUseCase(sl()));
+  UserDataSourceImpl({required this.sharedPreferences});
 
-  // BLoCs
-  sl.registerFactory(() => AuthBloc(
-    loginUseCase: sl(),
-    registerUseCase: sl(),
-  ));
-  sl.registerFactory(() => WorkoutBloc(
-    getWorkoutsUseCase: sl(),
-  ));
+  @override
+  Future<User> getUserProfile() async {
+    //Implementation to fetch user profile from SharedPreferences or other source
+    //Replace with actual implementation
+    return User(id: 1, name: 'Test User', email: 'test@example.com');
+  }
+
+  @override
+  Future<void> updateUserProfile(User user) async {
+    //Implementation to update user profile in SharedPreferences or other source
+  }
+}
+
+
+//Repositories
+abstract class UserRepository {
+  Future<User> getUserProfile();
+  Future<void> updateUserProfile(User user);
+}
+
+class UserRepositoryImpl implements UserRepository {
+  final UserDataSource dataSource;
+
+  UserRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<User> getUserProfile() => dataSource.getUserProfile();
+
+  @override
+  Future<void> updateUserProfile(User user) => dataSource.updateUserProfile(user);
+}
+
+
+//Domain Layer
+
+//Use Cases
+class GetUserProfileUseCase {
+  final UserRepository userRepository;
+
+  GetUserProfileUseCase(this.userRepository);
+
+  Future<User> call() async {
+    return await userRepository.getUserProfile();
+  }
+}
+
+class UpdateUserProfileUseCase {
+  final UserRepository userRepository;
+
+  UpdateUserProfileUseCase(this.userRepository);
+
+  Future<void> call(User user) async {
+    await userRepository.updateUserProfile(user);
+  }
+}
+
+
+//Presentation Layer
+
+//Blocs
+//UserBloc - Events and States are added below
+
+//User Events
+abstract class UserEvent {}
+
+class GetUserProfile extends UserEvent {}
+
+class UpdateUserProfile extends UserEvent {
+  final User user;
+  UpdateUserProfile({required this.user});
+}
+
+
+//User States
+abstract class UserState {}
+
+class UserInitial extends UserState {}
+
+class UserLoading extends UserState {}
+
+class UserLoaded extends UserState {
+  final User user;
+  UserLoaded({required this.user});
+}
+
+class UserError extends UserState {
+  final String message;
+  UserError({required this.message});
+}
+
+
+//User Bloc
+class UserBloc extends Bloc<UserEvent, UserState> {
+  final GetUserProfileUseCase getUserProfileUseCase;
+  final UpdateUserProfileUseCase updateUserProfileUseCase;
+
+  UserBloc({required this.getUserProfileUseCase, required this.updateUserProfileUseCase}) : super(UserInitial()) {
+    on<GetUserProfile>((event, emit) async {
+      emit(UserLoading());
+      try {
+        final user = await getUserProfileUseCase();
+        emit(UserLoaded(user: user));
+      } catch (e) {
+        emit(UserError(message: e.toString()));
+      }
+    });
+    on<UpdateUserProfile>((event, emit) async {
+      emit(UserLoading());
+      try {
+        await updateUserProfileUseCase(event.user);
+        //Potentially fetch updated user profile
+        final user = await getUserProfileUseCase();
+        emit(UserLoaded(user: user));
+      } catch (e) {
+        emit(UserError(message: e.toString()));
+      }
+    });
+  }
+}
+
+
+//Entities
+class User {
+  final int id;
+  final String name;
+  final String email;
+
+  User({required this.id, required this.name, required this.email});
 }

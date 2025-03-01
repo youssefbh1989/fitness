@@ -71,3 +71,22 @@ class UpdateUserProfileEvent extends UserEvent {
 }
 
 class LogOutEvent extends UserEvent {}
+part of 'user_bloc.dart';
+
+abstract class UserEvent extends Equatable {
+  const UserEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class GetUserProfileEvent extends UserEvent {}
+
+class UpdateUserProfileEvent extends UserEvent {
+  final User user;
+
+  const UpdateUserProfileEvent({required this.user});
+
+  @override
+  List<Object> get props => [user];
+}

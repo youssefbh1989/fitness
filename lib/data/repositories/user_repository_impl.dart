@@ -52,3 +52,35 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 }
+import 'package:dartz/dartz.dart';
+import '../../core/error/failures.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../datasources/user_data_source.dart';
+import '../models/user_model.dart';
+
+class UserRepositoryImpl implements UserRepository {
+  final UserDataSource dataSource;
+
+  UserRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<Either<Failure, User>> getUserProfile() async {
+    try {
+      final userModel = await dataSource.getUserProfile();
+      return Right(userModel);
+    } catch (e) {
+      return Left(ServerFailure(message: 'Failed to fetch user profile'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> updateUserProfile(User user) async {
+    try {
+      final userModel = await dataSource.updateUserProfile(UserModel.fromEntity(user));
+      return Right(userModel);
+    } catch (e) {
+      return Left(ServerFailure(message: 'Failed to update user profile'));
+    }
+  }
+}

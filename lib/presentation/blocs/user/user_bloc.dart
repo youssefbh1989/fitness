@@ -61,3 +61,35 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 }
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/usecases/user/get_user_profile_usecase.dart';
+
+part 'user_event.dart';
+part 'user_state.dart';
+
+class UserBloc extends Bloc<UserEvent, UserState> {
+  final GetUserProfileUseCase getUserProfileUseCase;
+
+  UserBloc({required this.getUserProfileUseCase}) : super(UserInitial()) {
+    on<GetUserProfileEvent>(_onGetUserProfile);
+    on<UpdateUserProfileEvent>(_onUpdateUserProfile);
+  }
+
+  Future<void> _onGetUserProfile(GetUserProfileEvent event, Emitter<UserState> emit) async {
+    emit(UserLoading());
+    
+    final result = await getUserProfileUseCase();
+    
+    result.fold(
+      (failure) => emit(UserError(message: failure.message)),
+      (user) => emit(UserLoaded(user: user))
+    );
+  }
+
+  Future<void> _onUpdateUserProfile(UpdateUserProfileEvent event, Emitter<UserState> emit) async {
+    // Implement this method when needed
+    // Will handle user profile updates
+  }
+}

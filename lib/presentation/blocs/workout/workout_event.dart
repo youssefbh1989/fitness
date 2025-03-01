@@ -77,3 +77,13 @@ class GetWorkoutsByCategoryEvent extends WorkoutEvent {
 class GetFeaturedWorkoutsEvent extends WorkoutEvent {}
 
 class GetWorkoutCategoriesEvent extends WorkoutEvent {}
+part of 'workout_bloc.dart';
+
+abstract class WorkoutEvent extends Equatable {
+  const WorkoutEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class FetchWorkoutsEvent extends WorkoutEvent {}

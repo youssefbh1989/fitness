@@ -207,3 +207,29 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     );
   }
 }
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../../domain/entities/workout.dart';
+import '../../../domain/usecases/workout/get_workouts_usecase.dart';
+
+part 'workout_event.dart';
+part 'workout_state.dart';
+
+class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
+  final GetWorkoutsUseCase getWorkoutsUseCase;
+
+  WorkoutBloc({required this.getWorkoutsUseCase}) : super(WorkoutInitial()) {
+    on<FetchWorkoutsEvent>(_onFetchWorkouts);
+  }
+
+  Future<void> _onFetchWorkouts(FetchWorkoutsEvent event, Emitter<WorkoutState> emit) async {
+    emit(WorkoutLoading());
+    
+    final result = await getWorkoutsUseCase();
+    
+    result.fold(
+      (failure) => emit(WorkoutError(message: failure.message)),
+      (workouts) => emit(WorkoutLoaded(workouts: workouts))
+    );
+  }
+}

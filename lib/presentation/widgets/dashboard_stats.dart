@@ -96,3 +96,117 @@ class DashboardStats extends StatelessWidget {
     );
   }
 }
+import 'package:flutter/material.dart';
+import '../../core/utils/size_config.dart';
+
+class DashboardStats extends StatelessWidget {
+  const DashboardStats({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildStatCard(
+          context,
+          title: 'Calories',
+          value: '450',
+          unit: 'kcal',
+          icon: Icons.local_fire_department,
+          iconColor: Colors.orange,
+          progressValue: 0.45,
+        ),
+        _buildStatCard(
+          context,
+          title: 'Workouts',
+          value: '2',
+          unit: '/4',
+          icon: Icons.fitness_center,
+          iconColor: Colors.blue,
+          progressValue: 0.5,
+        ),
+        _buildStatCard(
+          context,
+          title: 'Water',
+          value: '1.5',
+          unit: 'L',
+          icon: Icons.water_drop,
+          iconColor: Colors.lightBlue,
+          progressValue: 0.6,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required String unit,
+    required IconData icon,
+    required Color iconColor,
+    required double progressValue,
+  }) {
+    return Container(
+      width: SizeConfig.screenWidth! * 0.28,
+      padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.03),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
+                ),
+              ),
+              Icon(
+                icon,
+                color: iconColor,
+                size: 18,
+              ),
+            ],
+          ),
+          SizedBox(height: SizeConfig.screenHeight! * 0.01),
+          RichText(
+            text: TextSpan(
+              text: value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              children: [
+                TextSpan(
+                  text: unit,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: SizeConfig.screenHeight! * 0.01),
+          LinearProgressIndicator(
+            value: progressValue,
+            backgroundColor: Colors.grey.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+            borderRadius: BorderRadius.circular(10),
+            minHeight: 5,
+          ),
+        ],
+      ),
+    );
+  }
+}

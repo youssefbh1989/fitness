@@ -44,3 +44,22 @@ class SizeConfig {
   static double get headlineMedium => getProportionateScreenWidth(32);
   static double get headlineLarge => getProportionateScreenWidth(36);
 }
+import 'package:flutter/material.dart';
+
+class SizeConfig {
+  static MediaQueryData? _mediaQueryData;
+  static double? screenWidth;
+  static double? screenHeight;
+  static double? defaultSize;
+  static Orientation? orientation;
+
+  void init(BuildContext context) {
+    _mediaQueryData = MediaQuery.of(context);
+    screenWidth = _mediaQueryData!.size.width;
+    screenHeight = _mediaQueryData!.size.height;
+    orientation = _mediaQueryData!.orientation;
+    
+    // Calculate defaultSize based on screen width for responsive design
+    defaultSize = screenWidth! * 0.024;
+  }
+}
