@@ -169,3 +169,43 @@ class AppRouter {
     }
   }
 }
+import 'package:flutter/material.dart';
+import '../screens/home/home_screen.dart';
+// Import other screens as needed
+
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/':
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      case '/profile':
+        // return MaterialPageRoute(builder: (_) => const ProfileScreen());
+        return MaterialPageRoute(builder: (_) => const Scaffold(
+          body: Center(child: Text('Profile Screen - To be implemented')),
+        ));
+      case '/workouts':
+        // return MaterialPageRoute(builder: (_) => const WorkoutsScreen());
+        return MaterialPageRoute(builder: (_) => const Scaffold(
+          body: Center(child: Text('Workouts Screen - To be implemented')),
+        ));
+      case '/challenges':
+        // return MaterialPageRoute(builder: (_) => const ChallengesScreen());
+        return MaterialPageRoute(builder: (_) => const Scaffold(
+          body: Center(child: Text('Challenges Screen - To be implemented')),
+        ));
+      case '/articles':
+        // return MaterialPageRoute(builder: (_) => const ArticlesScreen());
+        return MaterialPageRoute(builder: (_) => const Scaffold(
+          body: Center(child: Text('Articles Screen - To be implemented')),
+        ));
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(
+              child: Text('No route defined for ${settings.name}'),
+            ),
+          ),
+        );
+    }
+  }
+}

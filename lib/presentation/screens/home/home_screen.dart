@@ -41,6 +41,27 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Selected tab index
+  int _selectedIndex = 0;
+  
+  // List of tab widgets
+  final List<Widget> _tabs = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize tabs
+    _tabs.addAll([
+      _buildDashboardTab(),
+      _buildWorkoutsTab(),
+      _buildNutritionTab(),
+      _buildProfileTab(),
+    ]);
+    
+    // Initialize blocs with proper error handling
+    _initializeBlocs();
+  }
+  
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -49,29 +70,65 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05,
-            vertical: screenHeight * 0.02,
+        child: _tabs[_selectedIndex],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.03),
-              const DashboardStats(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.03),
-              _buildDailyGoals(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.03),
-              _buildRecommendedWorkouts(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.03),
-              _buildChallenges(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.03),
-              _buildArticles(),
-              SizedBox(height: SizeConfig.screenHeight! * 0.05),
-            ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center),
+            label: 'Workouts',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant_menu),
+            label: 'Nutrition',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDashboardTab() {
+    final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
+    final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
+    
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.05,
+        vertical: screenHeight * 0.02,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          const DashboardStats(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildDailyGoals(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildRecommendedWorkouts(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildChallenges(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.03),
+          _buildArticles(),
+          SizedBox(height: SizeConfig.screenHeight! * 0.05),
+        ],
       ),
     );
   }
@@ -121,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             GestureDetector(
               onTap: () {
-                // Navigate to profile or show profile options
+                Navigator.of(context).pushNamed('/profile');
               },
               child: Container(
                 padding: const EdgeInsets.all(2),
@@ -136,7 +193,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   tag: 'profileImage',
                   child: CircleAvatar(
                     radius: 22,
-                    backgroundImage: AssetImage(profileImage),
+                    backgroundImage: profileImage.startsWith('assets/')
+                        ? AssetImage(profileImage) as ImageProvider
+                        : NetworkImage(profileImage),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      print('Error loading profile image: $exception');
+                      // Fall back to placeholder
+                    },
                   ),
                 ),
               ),
@@ -251,7 +314,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).pushNamed('/workouts');
+              },
               child: Text(
                 'See All',
                 style: TextStyle(color: Theme.of(context).primaryColor),
@@ -331,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Navigate to challenges screen
+                Navigator.of(context).pushNamed('/challenges');
               },
               child: Text(
                 'More',
@@ -385,7 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Navigate to articles screen
+                Navigator.of(context).pushNamed('/articles');
               },
               child: Text(
                 'See All',
@@ -412,3 +477,226 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+  Widget _buildWorkoutsTab() {
+    return BlocBuilder<WorkoutBloc, WorkoutState>(
+      builder: (context, state) {
+        if (state is WorkoutLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is WorkoutLoaded) {
+          if (state.workouts.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'No workouts available',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+                    },
+                    child: const Text('Refresh'),
+                  ),
+                ],
+              ),
+            );
+          }
+          
+          return ListView.builder(
+            padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+            itemCount: state.workouts.length,
+            itemBuilder: (context, index) {
+              final workout = state.workouts[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: WorkoutCard(workout: workout),
+              );
+            },
+          );
+        } else if (state is WorkoutError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Error: ${state.message}',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+                  },
+                  child: const Text('Try Again'),
+                ),
+              ],
+            ),
+          );
+        }
+        
+        return const Center(child: Text('No workouts data'));
+      },
+    );
+  }
+
+  Widget _buildNutritionTab() {
+    // Placeholder for now - would implement nutrition tab with proper data
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.restaurant_menu,
+            size: 64,
+            color: Theme.of(context).primaryColor,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Nutrition Coming Soon',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Track your calories, macros, and meal plans',
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileTab() {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state is UserLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is UserLoaded) {
+          final user = state.user;
+          
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                Hero(
+                  tag: 'profileImage',
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty
+                        ? NetworkImage(user.profileImageUrl!) as ImageProvider
+                        : const AssetImage('assets/images/profile_placeholder.png'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  user.name,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  user.email,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildProfileMenuItem(
+                  icon: Icons.person,
+                  title: 'Personal Information',
+                  onTap: () {
+                    // Navigate to personal info screen
+                  },
+                ),
+                _buildProfileMenuItem(
+                  icon: Icons.fitness_center,
+                  title: 'My Workouts',
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = 1; // Navigate to workouts tab
+                    });
+                  },
+                ),
+                _buildProfileMenuItem(
+                  icon: Icons.settings,
+                  title: 'Settings',
+                  onTap: () {
+                    // Navigate to settings screen
+                  },
+                ),
+                _buildProfileMenuItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  onTap: () {
+                    // Show logout confirmation dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              // Logout logic here
+                              // context.read<AuthBloc>().add(LogoutEvent());
+                            },
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        } else if (state is UserError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Error loading profile: ${state.message}',
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<UserBloc>().add(GetUserProfileEvent());
+                  },
+                  child: const Text('Try Again'),
+                ),
+              ],
+            ),
+          );
+        }
+        
+        return const Center(child: Text('No profile data'));
+      },
+    );
+  }
+  
+  Widget _buildProfileMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).primaryColor),
+      title: Text(title),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
+    );
+  }
