@@ -271,3 +271,155 @@ class AccessibilityUtils {
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+
+/// Utility class to handle accessibility features throughout the app
+class AccessibilityUtils {
+  // Private constructor to prevent instantiation
+  AccessibilityUtils._();
+  
+  /// Check if screen reader is enabled
+  static Future<bool> isScreenReaderEnabled() async {
+    return await SemanticsBinding.instance.accessibilityFeatures.isAccessibilityEnabled;
+  }
+  
+  /// Updates semantic properties for a widget to improve screen reader experience
+  static Semantics improveSemanticLabel({
+    required Widget child,
+    required String label,
+    String? hint,
+    bool excludeSemantics = false,
+  }) {
+    return Semantics(
+      label: label,
+      hint: hint,
+      excludeSemantics: excludeSemantics,
+      child: child,
+    );
+  }
+  
+  /// Provides a more descriptive label for buttons and interactive elements
+  static Widget labelButton({
+    required Widget button,
+    required String label,
+    String? hint,
+  }) {
+    return Semantics(
+      label: label,
+      hint: hint,
+      button: true,
+      child: ExcludeSemantics(
+        child: button,
+      ),
+    );
+  }
+  
+  /// Makes sure images have proper accessibility descriptions
+  static Widget accessibleImage({
+    required ImageProvider image,
+    required String description,
+    BoxFit? fit,
+    double? width,
+    double? height,
+  }) {
+    return Semantics(
+      image: true,
+      label: description,
+      child: ExcludeSemantics(
+        child: Image(
+          image: image,
+          fit: fit,
+          width: width,
+          height: height,
+        ),
+      ),
+    );
+  }
+  
+  /// Helper method for creating accessible form fields
+  static Widget accessibleFormField({
+    required Widget field,
+    required String label,
+    String? error,
+    bool isRequired = false,
+  }) {
+    String accessibilityLabel = label;
+    if (isRequired) {
+      accessibilityLabel += ", required field";
+    }
+    
+    if (error != null && error.isNotEmpty) {
+      accessibilityLabel += ", error: $error";
+    }
+    
+    return Semantics(
+      label: accessibilityLabel,
+      textField: true,
+      child: field,
+    );
+  }
+  
+  /// Enhances tab navigation with proper labels
+  static Widget accessibleTabItem({
+    required Widget tab,
+    required String label,
+    required bool isSelected,
+  }) {
+    return Semantics(
+      label: label,
+      selected: isSelected,
+      child: tab,
+    );
+  }
+  
+  /// Helper to create accessibility-friendly list items
+  static Widget accessibleListItem({
+    required Widget child,
+    required String label,
+    VoidCallback? onTap,
+  }) {
+    return Semantics(
+      label: label,
+      button: onTap != null,
+      enabled: onTap != null,
+      child: InkWell(
+        onTap: onTap,
+        child: child,
+      ),
+    );
+  }
+  
+  /// Increases tap target size for better accessibility
+  static Widget enlargeTapArea({
+    required Widget child,
+    double minSize = 48.0,
+  }) {
+    return SizedBox(
+      width: minSize,
+      height: minSize,
+      child: Center(
+        child: child,
+      ),
+    );
+  }
+  
+  /// Sets up proper accessibility ordering for a group of widgets
+  static Widget createAccessibilityOrder({
+    required List<Widget> children,
+    required BuildContext context,
+  }) {
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: DefaultTextStyle(
+        style: Theme.of(context).textTheme.bodyMedium!,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: children,
+        ),
+      ),
+    );
+  }
+}

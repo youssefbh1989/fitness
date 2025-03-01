@@ -232,3 +232,107 @@ class DeepLinkHandler {
     }
   }
 }
+import 'package:flutter/material.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
+
+class DeepLinkHandler {
+  final NavigatorState navigator;
+  StreamSubscription? _sub;
+  
+  DeepLinkHandler({required this.navigator});
+  
+  Future<void> init() async {
+    // Handle initial URI if app was started from a link
+    try {
+      final initialUri = await getInitialUri();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      print('Error getting initial URI: $e');
+    }
+    
+    // Handle URI when app is already running
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    }, onError: (err) {
+      print('Error in deep link stream: $err');
+    });
+  }
+  
+  void dispose() {
+    _sub?.cancel();
+  }
+  
+  void _handleDeepLink(Uri uri) {
+    // Extract path and parameters from URI
+    final pathSegments = uri.pathSegments;
+    final params = uri.queryParameters;
+    
+    if (pathSegments.isEmpty) return;
+    
+    String route = '';
+    Map<String, dynamic> arguments = {};
+    
+    // Handle various deep link paths
+    switch (pathSegments[0]) {
+      case 'workout':
+        if (pathSegments.length > 1) {
+          final workoutId = pathSegments[1];
+          route = '/workout-detail';
+          arguments = {'id': workoutId};
+        } else {
+          route = '/workouts';
+        }
+        break;
+        
+      case 'profile':
+        route = '/profile';
+        break;
+        
+      case 'nutrition':
+        if (pathSegments.length > 1) {
+          final nutritionSection = pathSegments[1];
+          if (nutritionSection == 'meal-plan') {
+            route = '/meal-planning';
+          } else if (nutritionSection == 'water') {
+            route = '/water-tracker';
+          } else {
+            route = '/nutrition';
+          }
+        } else {
+          route = '/nutrition';
+        }
+        break;
+        
+      case 'challenge':
+        if (pathSegments.length > 1) {
+          final challengeId = pathSegments[1];
+          route = '/challenge-detail';
+          arguments = {'id': challengeId};
+        } else {
+          route = '/challenges';
+        }
+        break;
+        
+      case 'settings':
+        route = '/settings';
+        break;
+        
+      default:
+        route = '/';
+        break;
+    }
+    
+    // Add any additional query parameters to arguments
+    arguments.addAll(params);
+    
+    // Navigate to the route
+    if (route.isNotEmpty) {
+      navigator.pushNamed(route, arguments: arguments);
+    }
+  }
+}

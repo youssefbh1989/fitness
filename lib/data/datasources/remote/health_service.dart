@@ -368,3 +368,234 @@ enum AggregateFunction {
   AVERAGE,
   LATEST,
 }
+import 'dart:async';
+
+import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+class HealthService {
+  final HealthFactory _healthFactory = HealthFactory();
+  
+  // Types of health data to be collected
+  final List<HealthDataType> _types = [
+    HealthDataType.STEPS,
+    HealthDataType.ACTIVE_ENERGY_BURNED,
+    HealthDataType.DISTANCE_WALKING_RUNNING,
+    HealthDataType.HEART_RATE,
+    HealthDataType.MOVE_MINUTES,
+    HealthDataType.WEIGHT,
+    HealthDataType.HEIGHT,
+    HealthDataType.BODY_MASS_INDEX,
+    HealthDataType.BODY_FAT_PERCENTAGE,
+  ];
+  
+  // Authorization permissions
+  final List<HealthDataAccess> _permissions = [
+    HealthDataAccess.READ,
+    HealthDataAccess.READ_WRITE,
+  ];
+  
+  /// Request permissions to access health data
+  Future<bool> requestPermissions() async {
+    try {
+      // Request general permissions first
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.activityRecognition,
+        Permission.location,
+      ].request();
+      
+      // Check if permissions are granted
+      bool generalPermissionsGranted = !statuses.values.any(
+        (status) => status != PermissionStatus.granted
+      );
+      
+      if (!generalPermissionsGranted) {
+        return false;
+      }
+      
+      // Request health permissions
+      bool healthPermissionsGranted = await _healthFactory.requestAuthorization(_types, permissions: _permissions);
+      
+      return healthPermissionsGranted;
+    } catch (e) {
+      print('Error requesting health permissions: $e');
+      return false;
+    }
+  }
+  
+  /// Fetch step count for a specific day
+  Future<int> getStepsForDay(DateTime date) async {
+    try {
+      final midnight = DateTime(date.year, date.month, date.day);
+      final now = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      
+      List<HealthDataPoint> healthData = await _healthFactory.getHealthDataFromTypes(
+        midnight, 
+        now, 
+        [HealthDataType.STEPS]
+      );
+      
+      // Filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+      
+      // Sum up the steps
+      int steps = 0;
+      for (HealthDataPoint point in healthData) {
+        steps += (point.value as NumericHealthValue).numericValue.toInt();
+      }
+      
+      return steps;
+    } catch (e) {
+      print('Error fetching steps: $e');
+      return 0;
+    }
+  }
+  
+  /// Fetch calories burned for a specific day
+  Future<double> getCaloriesBurnedForDay(DateTime date) async {
+    try {
+      final midnight = DateTime(date.year, date.month, date.day);
+      final now = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      
+      List<HealthDataPoint> healthData = await _healthFactory.getHealthDataFromTypes(
+        midnight, 
+        now, 
+        [HealthDataType.ACTIVE_ENERGY_BURNED]
+      );
+      
+      // Filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+      
+      // Sum up the calories
+      double calories = 0;
+      for (HealthDataPoint point in healthData) {
+        calories += (point.value as NumericHealthValue).numericValue;
+      }
+      
+      return calories;
+    } catch (e) {
+      print('Error fetching calories: $e');
+      return 0;
+    }
+  }
+  
+  /// Fetch active minutes for a specific day
+  Future<int> getActiveMinutesForDay(DateTime date) async {
+    try {
+      final midnight = DateTime(date.year, date.month, date.day);
+      final now = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      
+      List<HealthDataPoint> healthData = await _healthFactory.getHealthDataFromTypes(
+        midnight, 
+        now, 
+        [HealthDataType.MOVE_MINUTES]
+      );
+      
+      // Filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+      
+      // Sum up the minutes
+      int minutes = 0;
+      for (HealthDataPoint point in healthData) {
+        minutes += (point.value as NumericHealthValue).numericValue.toInt();
+      }
+      
+      return minutes;
+    } catch (e) {
+      print('Error fetching active minutes: $e');
+      return 0;
+    }
+  }
+  
+  /// Get latest weight measurement
+  Future<double?> getLatestWeight() async {
+    try {
+      final now = DateTime.now();
+      final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+      
+      List<HealthDataPoint> healthData = await _healthFactory.getHealthDataFromTypes(
+        thirtyDaysAgo, 
+        now, 
+        [HealthDataType.WEIGHT]
+      );
+      
+      // Filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+      
+      // Sort by date to get the latest
+      healthData.sort((a, b) => b.dateFrom.compareTo(a.dateFrom));
+      
+      if (healthData.isNotEmpty) {
+        return (healthData.first.value as NumericHealthValue).numericValue;
+      }
+      
+      return null;
+    } catch (e) {
+      print('Error fetching weight: $e');
+      return null;
+    }
+  }
+  
+  /// Get latest height measurement
+  Future<double?> getLatestHeight() async {
+    try {
+      final now = DateTime.now();
+      final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+      
+      List<HealthDataPoint> healthData = await _healthFactory.getHealthDataFromTypes(
+        thirtyDaysAgo, 
+        now, 
+        [HealthDataType.HEIGHT]
+      );
+      
+      // Filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+      
+      // Sort by date to get the latest
+      healthData.sort((a, b) => b.dateFrom.compareTo(a.dateFrom));
+      
+      if (healthData.isNotEmpty) {
+        return (healthData.first.value as NumericHealthValue).numericValue;
+      }
+      
+      return null;
+    } catch (e) {
+      print('Error fetching height: $e');
+      return null;
+    }
+  }
+  
+  /// Write weight data to health platform
+  Future<bool> writeWeight(double weight) async {
+    try {
+      final now = DateTime.now();
+      final bool success = await _healthFactory.writeHealthData(
+        weight, 
+        HealthDataType.WEIGHT, 
+        now, 
+        now
+      );
+      return success;
+    } catch (e) {
+      print('Error writing weight: $e');
+      return false;
+    }
+  }
+  
+  /// Write height data to health platform
+  Future<bool> writeHeight(double height) async {
+    try {
+      final now = DateTime.now();
+      final bool success = await _healthFactory.writeHealthData(
+        height, 
+        HealthDataType.HEIGHT, 
+        now, 
+        now
+      );
+      return success;
+    } catch (e) {
+      print('Error writing height: $e');
+      return false;
+    }
+  }
+}

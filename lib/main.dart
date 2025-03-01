@@ -148,7 +148,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               Locale(state.settings.language) : null,
             navigatorObservers: [
               // Track screen views for analytics
-              _analyticsService.getAnalyticsObserver(),
+              di.sl<AnalyticsService>().getAnalyticsObserver(),
             ],
             builder: (context, child) {
               SizeConfig().init(context);
