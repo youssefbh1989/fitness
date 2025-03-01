@@ -25,7 +25,11 @@ import '../screens/workout/completed_workouts_screen.dart';
 import '../screens/nutrition/meal_planning_screen.dart';
 import '../screens/exercise/exercise_detail_screen.dart';
 import '../screens/settings/notifications_settings_screen.dart';
+import '../screens/settings/sync_settings_screen.dart'; // Added
+import '../screens/settings/data_export_import_screen.dart'; // Added
+import '../screens/measurements/body_measurements_screen.dart'; // Added
 import '../screens/subscription/subscription_screen.dart';
+import '../screens/help/help_support_screen.dart'; // Added
 
 
 class AppRouter {
@@ -52,7 +56,11 @@ class AppRouter {
   static const String mealPlanning = '/nutrition/meal-planning';
   static const String exerciseDetail = '/exercise/detail';
   static const String notificationSettings = '/settings/notifications';
+  static const String syncSettings = '/settings/sync'; // Added
+  static const String dataExportImport = '/settings/data'; // Added
+  static const String bodyMeasurements = '/body/measurements'; // Added
   static const String subscription = '/subscription';
+  static const String helpSupport = '/help/support'; // Added
 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -178,9 +186,16 @@ class AppRouter {
 
       case notificationSettings:
         return MaterialPageRoute(builder: (_) => const NotificationsSettingsScreen());
-
+      case syncSettings:
+        return MaterialPageRoute(builder: (_) => const SyncSettingsScreen()); // Added
+      case dataExportImport:
+        return MaterialPageRoute(builder: (_) => const DataExportImportScreen()); // Added
+      case bodyMeasurements:
+        return MaterialPageRoute(builder: (_) => const BodyMeasurementsScreen()); // Added
       case subscription:
         return MaterialPageRoute(builder: (_) => const SubscriptionScreen());
+      case helpSupport:
+        return MaterialPageRoute(builder: (_) => const HelpSupportScreen()); // Added
 
       default:
         return MaterialPageRoute(

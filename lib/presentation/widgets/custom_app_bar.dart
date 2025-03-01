@@ -44,3 +44,48 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
+import 'package:flutter/material.dart';
+
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final bool showBackButton;
+  final List<Widget>? actions;
+  final bool centerTitle;
+  final double height;
+  final PreferredSizeWidget? bottom;
+
+  const CustomAppBar({
+    Key? key,
+    required this.title,
+    this.showBackButton = false,
+    this.actions,
+    this.centerTitle = true,
+    this.height = kToolbarHeight,
+    this.bottom,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: centerTitle,
+      leading: showBackButton
+          ? IconButton(
+              icon: Icon(Icons.arrow_back_ios),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          : null,
+      actions: actions,
+      bottom: bottom,
+      elevation: 0,
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(height + (bottom?.preferredSize.height ?? 0.0));
+}

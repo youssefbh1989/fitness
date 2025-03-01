@@ -152,3 +152,83 @@ class DeepLinkHandler {
     _deepLinkStreamController.close();
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class DeepLinkHandler {
+  static const MethodChannel _channel = MethodChannel('fitbody.app/deeplink');
+  
+  final NavigatorState navigator;
+  
+  DeepLinkHandler({required this.navigator});
+  
+  Future<void> init() async {
+    try {
+      // Listen for dynamic links from native platform
+      _channel.setMethodCallHandler(_handleMethodCall);
+      
+      // Get initial link if app was opened via a deep link
+      final initialLink = await _getInitialLink();
+      if (initialLink != null && initialLink.isNotEmpty) {
+        _handleLink(initialLink);
+      }
+    } catch (e) {
+      print('Error initializing deep links: $e');
+    }
+  }
+  
+  Future<dynamic> _handleMethodCall(MethodCall call) async {
+    switch (call.method) {
+      case 'deepLinkReceived':
+        final String link = call.arguments;
+        return _handleLink(link);
+      default:
+        throw PlatformException(
+          code: 'Unimplemented',
+          details: 'Method ${call.method} not implemented',
+        );
+    }
+  }
+  
+  Future<String?> _getInitialLink() async {
+    try {
+      final initialLink = await _channel.invokeMethod<String>('getInitialLink');
+      return initialLink;
+    } catch (e) {
+      print('Error getting initial link: $e');
+      return null;
+    }
+  }
+  
+  Future<void> _handleLink(String link) async {
+    try {
+      print('Handling deep link: $link');
+      
+      // Parse the link
+      Uri uri = Uri.parse(link);
+      
+      // Extract path and query parameters
+      final path = uri.path;
+      final args = uri.queryParameters;
+      
+      // Determine the route to navigate to
+      if (path.startsWith('/workout/')) {
+        final workoutId = path.split('/').last;
+        navigator.pushNamed('/workout_detail', arguments: {'id': workoutId});
+      } else if (path == '/meal_planning') {
+        navigator.pushNamed('/meal_planning');
+      } else if (path == '/challenges') {
+        navigator.pushNamed('/challenges');
+      } else if (path == '/settings') {
+        navigator.pushNamed('/settings');
+      } else if (path == '/profile') {
+        navigator.pushNamed('/profile');
+      } else {
+        // Fallback to home if no specific route matches
+        navigator.pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    } catch (e) {
+      print('Error handling deep link: $e');
+    }
+  }
+}

@@ -45,11 +45,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final _errorHandler = ErrorHandler();
+  late DeepLinkHandler _deepLinkHandler;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // Initialize deep links after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initDeepLinks();
+    });
+  }
+  
+  Future<void> _initDeepLinks() async {
+    _deepLinkHandler = DeepLinkHandler(navigator: _navigatorKey.currentState!);
+    await _deepLinkHandler.init();
   }
   
   @override
@@ -110,6 +122,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
             initialRoute: AppRouter.initialRoute,
             onGenerateRoute: AppRouter.onGenerateRoute,
+            navigatorKey: _navigatorKey,
             navigatorObservers: [
               // Track screen views for analytics
               NavigatorObserver()

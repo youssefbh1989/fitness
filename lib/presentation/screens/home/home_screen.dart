@@ -67,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SizeConfig().init(context);
     final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
     final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       body: SafeArea(
@@ -81,7 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+        backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -101,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
   }
   
   Widget _buildDashboardTab() {
