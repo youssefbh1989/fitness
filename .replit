@@ -2,3 +2,14 @@ modules = ["cpp-clang14", "ruby-3.2", "swift-5.8"]
 
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Run Flutter"
+
+[[workflows.workflow]]
+name = "Run Flutter"
+author = 40001747
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "flutter run -d web-server --web-hostname=0.0.0.0 --web-port=3000"
