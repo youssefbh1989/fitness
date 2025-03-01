@@ -43,3 +43,17 @@ class GetWorkoutsUseCase {
     return await repository.getWorkouts();
   }
 }
+import 'package:dartz/dartz.dart';
+import 'package:fitbody/core/error/failures.dart';
+import 'package:fitbody/domain/entities/workout.dart';
+import 'package:fitbody/domain/repositories/workout_repository.dart';
+
+class GetWorkoutsUseCase {
+  final WorkoutRepository repository;
+
+  GetWorkoutsUseCase(this.repository);
+
+  Future<Either<Failure, List<Workout>>> call() {
+    return repository.getWorkouts();
+  }
+}

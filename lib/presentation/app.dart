@@ -64,3 +64,30 @@ class FitBodyApp extends StatelessWidget {
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:fitbody/presentation/pages/splash/splash_page.dart';
+import 'package:fitbody/core/theme/app_theme.dart';
+
+class FitBodyApp extends StatelessWidget {
+  const FitBodyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'FitBody',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: AppTheme.lightColorScheme,
+        textTheme: GoogleFonts.poppinsTextTheme(),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+      ),
+      home: const SplashPage(),
+    );
+  }
+}

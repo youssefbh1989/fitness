@@ -171,3 +171,44 @@ Future<void> init() async {
         getAchievementsByCategoryUseCase: sl(),
       ));
 }
+import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fitbody/data/repositories/auth_repository_impl.dart';
+import 'package:fitbody/data/repositories/workout_repository_impl.dart';
+import 'package:fitbody/domain/repositories/auth_repository.dart';
+import 'package:fitbody/domain/repositories/workout_repository.dart';
+import 'package:fitbody/domain/usecases/auth/login_usecase.dart';
+import 'package:fitbody/domain/usecases/auth/register_usecase.dart';
+import 'package:fitbody/domain/usecases/workout/get_workouts_usecase.dart';
+import 'package:fitbody/presentation/bloc/auth/auth_bloc.dart';
+import 'package:fitbody/presentation/bloc/workout/workout_bloc.dart';
+
+final GetIt sl = GetIt.instance;
+
+Future<void> init() async {
+  // External dependencies
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(sharedPreferences);
+
+  // Repositories
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sharedPreferences: sl()),
+  );
+  sl.registerLazySingleton<WorkoutRepository>(
+    () => WorkoutRepositoryImpl(),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton(() => RegisterUseCase(sl()));
+  sl.registerLazySingleton(() => GetWorkoutsUseCase(sl()));
+
+  // BLoCs
+  sl.registerFactory(() => AuthBloc(
+    loginUseCase: sl(),
+    registerUseCase: sl(),
+  ));
+  sl.registerFactory(() => WorkoutBloc(
+    getWorkoutsUseCase: sl(),
+  ));
+}

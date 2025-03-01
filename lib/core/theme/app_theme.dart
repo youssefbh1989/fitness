@@ -576,3 +576,92 @@ class AppTheme {
     ),
   );
 }
+import 'package:flutter/material.dart';
+
+class AppTheme {
+  // Private constructor to prevent instantiation
+  AppTheme._();
+
+  // Light theme color scheme
+  static const ColorScheme lightColorScheme = ColorScheme(
+    primary: Color(0xFF6C63FF),        // Primary brand color
+    onPrimary: Colors.white,           // Text/icons on primary
+    primaryContainer: Color(0xFFECEBFF), // Lighter variant of primary
+    onPrimaryContainer: Color(0xFF4A43C8), // Text on primary container
+    secondary: Color(0xFF03DAC6),      // Secondary accent color
+    onSecondary: Colors.black,         // Text/icons on secondary
+    secondaryContainer: Color(0xFFCEFAF5), // Lighter variant of secondary
+    onSecondaryContainer: Color(0xFF00857B), // Text on secondary container
+    tertiary: Color(0xFFFF8A65),       // Tertiary accent color
+    onTertiary: Colors.white,          // Text/icons on tertiary
+    tertiaryContainer: Color(0xFFFFDBD0), // Lighter variant of tertiary
+    onTertiaryContainer: Color(0xFFC55A38), // Text on tertiary container
+    error: Color(0xFFBA1A1A),          // Error color
+    onError: Colors.white,             // Text/icons on error
+    errorContainer: Color(0xFFFFDAD6), // Lighter variant of error
+    onErrorContainer: Color(0xFF410002), // Text on error container
+    background: Colors.white,          // Background color
+    onBackground: Colors.black,        // Text/icons on background
+    surface: Colors.white,             // Surface color
+    onSurface: Colors.black,           // Text/icons on surface
+    surfaceVariant: Color(0xFFF3F3F3), // Variant of surface color
+    onSurfaceVariant: Color(0xFF49454F), // Text/icons on surface variant
+    outline: Color(0xFFCAC4D0),        // Outline color
+    shadow: Colors.black,              // Shadow color
+    inverseSurface: Color(0xFF313033), // Inverse of surface color
+    onInverseSurface: Colors.white,    // Text/icons on inverse surface
+    inversePrimary: Color(0xFFD0BCFF), // Inverse of primary color
+    surfaceTint: Color(0xFF6C63FF),    // Tint for surface
+    brightness: Brightness.light,      // Overall brightness theme
+  );
+
+  // Text Styles
+  static const TextStyle headlineLarge = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.5,
+  );
+
+  static const TextStyle headlineMedium = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.5,
+  );
+
+  static const TextStyle headlineSmall = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const TextStyle titleLarge = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const TextStyle titleMedium = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const TextStyle bodyLarge = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.normal,
+  );
+
+  static const TextStyle bodyMedium = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.normal,
+  );
+
+  static const TextStyle labelLarge = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.1,
+  );
+
+  static const TextStyle labelMedium = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.5,
+  );
+}

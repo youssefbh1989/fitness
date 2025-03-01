@@ -169,3 +169,69 @@ class Workout extends Equatable {
   @override
   List<Object> get props => [id, title, description, imageUrl, level, duration, category, exercises];
 }
+import 'package:equatable/equatable.dart';
+
+class Workout extends Equatable {
+  final String id;
+  final String title;
+  final String description;
+  final String imageUrl;
+  final int duration;
+  final String difficulty;
+  final List<Exercise> exercises;
+  final bool isFavorite;
+
+  const Workout({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.duration,
+    required this.difficulty,
+    required this.exercises,
+    this.isFavorite = false,
+  });
+
+  @override
+  List<Object?> get props => [
+    id, 
+    title, 
+    description, 
+    imageUrl, 
+    duration, 
+    difficulty, 
+    exercises, 
+    isFavorite
+  ];
+}
+
+class Exercise extends Equatable {
+  final String id;
+  final String name;
+  final String description;
+  final String imageUrl;
+  final int sets;
+  final int reps;
+  final int restTime;
+
+  const Exercise({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.imageUrl,
+    required this.sets,
+    required this.reps,
+    required this.restTime,
+  });
+
+  @override
+  List<Object?> get props => [
+    id, 
+    name, 
+    description, 
+    imageUrl, 
+    sets, 
+    reps, 
+    restTime
+  ];
+}

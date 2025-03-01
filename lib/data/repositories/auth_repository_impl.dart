@@ -164,3 +164,106 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 }
+import 'package:dartz/dartz.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fitbody/core/error/failures.dart';
+import 'package:fitbody/domain/entities/user.dart';
+import 'package:fitbody/domain/repositories/auth_repository.dart';
+
+class AuthRepositoryImpl implements AuthRepository {
+  final SharedPreferences sharedPreferences;
+
+  AuthRepositoryImpl({required this.sharedPreferences});
+
+  @override
+  Future<Either<Failure, User>> login(String email, String password) async {
+    try {
+      // In a real app, this would call an API
+      await Future.delayed(const Duration(seconds: 1));
+      
+      if (email == 'test@example.com' && password == 'password') {
+        final user = User(
+          id: '1',
+          name: 'Test User',
+          email: email,
+          photoUrl: 'https://i.pravatar.cc/150?img=1',
+          createdAt: DateTime.now(),
+        );
+        
+        // Save user info to shared preferences
+        sharedPreferences.setString('user_id', user.id);
+        sharedPreferences.setString('user_name', user.name);
+        sharedPreferences.setString('user_email', user.email);
+        
+        return Right(user);
+      } else {
+        return Left(AuthFailure('Invalid email or password'));
+      }
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> register(String name, String email, String password) async {
+    try {
+      // In a real app, this would call an API
+      await Future.delayed(const Duration(seconds: 1));
+      
+      final user = User(
+        id: '1',
+        name: name,
+        email: email,
+        photoUrl: 'https://i.pravatar.cc/150?img=1',
+        createdAt: DateTime.now(),
+      );
+      
+      // Save user info to shared preferences
+      sharedPreferences.setString('user_id', user.id);
+      sharedPreferences.setString('user_name', user.name);
+      sharedPreferences.setString('user_email', user.email);
+      
+      return Right(user);
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+  
+  @override
+  Future<Either<Failure, bool>> logout() async {
+    try {
+      // Clear user info from shared preferences
+      await sharedPreferences.remove('user_id');
+      await sharedPreferences.remove('user_name');
+      await sharedPreferences.remove('user_email');
+      
+      return const Right(true);
+    } catch (e) {
+      return Left(CacheFailure());
+    }
+  }
+  
+  @override
+  Future<Either<Failure, User?>> getCurrentUser() async {
+    try {
+      final userId = sharedPreferences.getString('user_id');
+      final userName = sharedPreferences.getString('user_name');
+      final userEmail = sharedPreferences.getString('user_email');
+      
+      if (userId != null && userName != null && userEmail != null) {
+        final user = User(
+          id: userId,
+          name: userName,
+          email: userEmail,
+          photoUrl: 'https://i.pravatar.cc/150?img=1',
+        );
+        
+        return Right(user);
+      } else {
+        return const Right(null);
+      }
+    } catch (e) {
+      return Left(CacheFailure());
+    }
+  }
+}

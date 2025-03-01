@@ -259,3 +259,189 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     }
   }
 }
+import 'package:dartz/dartz.dart';
+import 'package:fitbody/core/error/failures.dart';
+import 'package:fitbody/domain/entities/workout.dart';
+import 'package:fitbody/domain/repositories/workout_repository.dart';
+
+class WorkoutRepositoryImpl implements WorkoutRepository {
+  final List<Workout> _mockWorkouts = [
+    Workout(
+      id: '1',
+      title: 'Full Body Burn',
+      description: 'A complete workout that targets all major muscle groups for a full body burn.',
+      imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+      duration: 45,
+      difficulty: 'Intermediate',
+      exercises: [
+        Exercise(
+          id: '1',
+          name: 'Push-ups',
+          description: 'Start in a plank position with hands slightly wider than shoulder-width apart. Lower your body until your chest nearly touches the floor, then push back up.',
+          imageUrl: 'https://images.unsplash.com/photo-1598971639058-bb01d3c8cc23?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 15,
+          restTime: 60,
+        ),
+        Exercise(
+          id: '2',
+          name: 'Squats',
+          description: 'Stand with feet shoulder-width apart. Lower your body by bending your knees and pushing your hips back as if sitting in a chair. Go as low as you can, then return to standing.',
+          imageUrl: 'https://images.unsplash.com/photo-1574231164645-d6f0e8553590?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 20,
+          restTime: 60,
+        ),
+        Exercise(
+          id: '3',
+          name: 'Plank',
+          description: 'Get into a push-up position but rest on your forearms. Keep your body in a straight line from head to heels.',
+          imageUrl: 'https://images.unsplash.com/photo-1566241440091-ec10de8db2e1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 1,
+          restTime: 60,
+        ),
+      ],
+    ),
+    Workout(
+      id: '2',
+      title: 'HIIT Cardio',
+      description: 'High-intensity interval training to burn calories and improve cardiovascular fitness.',
+      imageUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+      duration: 30,
+      difficulty: 'Advanced',
+      exercises: [
+        Exercise(
+          id: '4',
+          name: 'Jumping Jacks',
+          description: 'Start standing with arms at sides, then jump to a position with legs spread and arms raised overhead, then back to start.',
+          imageUrl: 'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 30,
+          restTime: 30,
+        ),
+        Exercise(
+          id: '5',
+          name: 'Mountain Climbers',
+          description: 'Start in a plank position. Alternately drive knees toward chest in a running motion.',
+          imageUrl: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 20,
+          restTime: 30,
+        ),
+        Exercise(
+          id: '6',
+          name: 'Burpees',
+          description: 'From standing, drop into a squat position, kick feet back to a plank, do a push-up, jump feet back to squat, then explode upward with a jump.',
+          imageUrl: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          sets: 3,
+          reps: 10,
+          restTime: 30,
+        ),
+      ],
+    ),
+  ];
+
+  final Set<String> _favoriteWorkoutIds = {};
+
+  @override
+  Future<Either<Failure, List<Workout>>> getWorkouts() async {
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Return mock workouts with updated favorite status
+      final workouts = _mockWorkouts.map((workout) {
+        return Workout(
+          id: workout.id,
+          title: workout.title,
+          description: workout.description,
+          imageUrl: workout.imageUrl,
+          duration: workout.duration,
+          difficulty: workout.difficulty,
+          exercises: workout.exercises,
+          isFavorite: _favoriteWorkoutIds.contains(workout.id),
+        );
+      }).toList();
+      
+      return Right(workouts);
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, Workout>> getWorkoutById(String id) async {
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(seconds: 1));
+      
+      final workout = _mockWorkouts.firstWhere(
+        (w) => w.id == id,
+        orElse: () => throw Exception('Workout not found'),
+      );
+      
+      // Return with updated favorite status
+      return Right(
+        Workout(
+          id: workout.id,
+          title: workout.title,
+          description: workout.description,
+          imageUrl: workout.imageUrl,
+          duration: workout.duration,
+          difficulty: workout.difficulty,
+          exercises: workout.exercises,
+          isFavorite: _favoriteWorkoutIds.contains(workout.id),
+        ),
+      );
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Workout>>> getFavoriteWorkouts() async {
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Filter and return favorite workouts
+      final favoriteWorkouts = _mockWorkouts
+          .where((workout) => _favoriteWorkoutIds.contains(workout.id))
+          .map((workout) {
+        return Workout(
+          id: workout.id,
+          title: workout.title,
+          description: workout.description,
+          imageUrl: workout.imageUrl,
+          duration: workout.duration,
+          difficulty: workout.difficulty,
+          exercises: workout.exercises,
+          isFavorite: true,
+        );
+      }).toList();
+      
+      return Right(favoriteWorkouts);
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> toggleFavoriteWorkout(String id) async {
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(seconds: 500));
+      
+      if (_favoriteWorkoutIds.contains(id)) {
+        _favoriteWorkoutIds.remove(id);
+      } else {
+        _favoriteWorkoutIds.add(id);
+      }
+      
+      return Right(_favoriteWorkoutIds.contains(id));
+    } catch (e) {
+      return Left(ServerFailure());
+    }
+  }
+}

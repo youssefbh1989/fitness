@@ -21,3 +21,13 @@ abstract class WorkoutRepository {
   Future<Either<Failure, List<Workout>>> getFeaturedWorkouts();
   Future<Either<Failure, List<String>>> getWorkoutCategories();
 }
+import 'package:dartz/dartz.dart';
+import 'package:fitbody/core/error/failures.dart';
+import 'package:fitbody/domain/entities/workout.dart';
+
+abstract class WorkoutRepository {
+  Future<Either<Failure, List<Workout>>> getWorkouts();
+  Future<Either<Failure, Workout>> getWorkoutById(String id);
+  Future<Either<Failure, List<Workout>>> getFavoriteWorkouts();
+  Future<Either<Failure, bool>> toggleFavoriteWorkout(String id);
+}
