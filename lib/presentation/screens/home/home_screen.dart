@@ -20,19 +20,39 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<UserBloc>().add(GetUserProfileEvent());
-    context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+    // Initialize blocs with proper error handling
+    _initializeBlocs();
+  }
+  
+  void _initializeBlocs() {
+    try {
+      context.read<UserBloc>().add(GetUserProfileEvent());
+      context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+    } catch (e) {
+      // Handle any initialization errors
+      print('Error initializing blocs: $e');
+      
+      // Retry logic could be added here if needed
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          _initializeBlocs();
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
+    final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
+    
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
-            horizontal: SizeConfig.screenWidth! * 0.05,
-            vertical: SizeConfig.screenHeight! * 0.02,
+            horizontal: screenWidth * 0.05,
+            vertical: screenHeight * 0.02,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,8 +80,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         String userName = "Fitness Enthusiast";
-        if (state is UserLoaded) {
-          userName = state.user.name.split(' ')[0];
+        String profileImage = 'assets/images/profile_placeholder.png';
+        
+        if (state is UserLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is UserLoaded) {
+          // Split name and use first part or default if empty
+          final nameParts = state.user.name.split(' ');
+          userName = nameParts.isNotEmpty ? nameParts[0] : userName;
+          
+          // Use user profile image if available
+          if (state.user.profileImageUrl != null && state.user.profileImageUrl!.isNotEmpty) {
+            profileImage = state.user.profileImageUrl!;
+          }
+        } else if (state is UserError) {
+          // Still show the UI but could add a small error indicator
+          userName = "Friend";
         }
 
         return Row(
@@ -85,18 +119,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                  width: 2,
+            GestureDetector(
+              onTap: () {
+                // Navigate to profile or show profile options
+              },
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: const CircleAvatar(
-                radius: 22,
-                backgroundImage: AssetImage('assets/images/profile_placeholder.png'),
+                child: Hero(
+                  tag: 'profileImage',
+                  child: CircleAvatar(
+                    radius: 22,
+                    backgroundImage: AssetImage(profileImage),
+                  ),
+                ),
               ),
             ),
           ],
@@ -221,8 +263,20 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocBuilder<WorkoutBloc, WorkoutState>(
           builder: (context, state) {
             if (state is WorkoutLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return SizedBox(
+                height: SizeConfig.screenHeight! * 0.20,
+                child: const Center(child: CircularProgressIndicator()),
+              );
             } else if (state is WorkoutLoaded) {
+              if (state.workouts.isEmpty) {
+                return SizedBox(
+                  height: SizeConfig.screenHeight! * 0.20,
+                  child: const Center(
+                    child: Text('No workouts available at the moment'),
+                  ),
+                );
+              }
+              
               return SizedBox(
                 height: SizeConfig.screenHeight! * 0.20,
                 child: ListView.builder(
@@ -237,8 +291,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               );
+            } else if (state is WorkoutError) {
+              return SizedBox(
+                height: SizeConfig.screenHeight! * 0.20,
+                child: Center(
+                  child: Text(
+                    'Error: ${state.message}',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              );
             } else {
-              return const Center(child: Text('No workouts available'));
+              return SizedBox(
+                height: SizeConfig.screenHeight! * 0.20,
+                child: const Center(child: Text('No workouts available')),
+              );
             }
           },
         ),
@@ -247,6 +314,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildChallenges() {
+    final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
+    final screenWidth = SizeConfig.screenWidth ?? MediaQuery.of(context).size.width;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -260,7 +330,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                // Navigate to challenges screen
+              },
               child: Text(
                 'More',
                 style: TextStyle(color: Theme.of(context).primaryColor),
@@ -268,9 +340,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        SizedBox(height: SizeConfig.screenHeight! * 0.01),
+        SizedBox(height: screenHeight * 0.01),
         SizedBox(
-          height: SizeConfig.screenHeight! * 0.15,
+          height: screenHeight * 0.15,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: const [
@@ -297,6 +369,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildArticles() {
+    final screenHeight = SizeConfig.screenHeight ?? MediaQuery.of(context).size.height;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -310,7 +384,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                // Navigate to articles screen
+              },
               child: Text(
                 'See All',
                 style: TextStyle(color: Theme.of(context).primaryColor),
@@ -318,14 +394,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        SizedBox(height: SizeConfig.screenHeight! * 0.01),
+        SizedBox(height: screenHeight * 0.01),
         const ArticleCard(
           title: 'How to Stay Motivated for Your Workout Routine',
           author: 'John Fitness',
           readTime: '5 min read',
           imageUrl: 'assets/images/workout_1.jpg',
         ),
-        SizedBox(height: SizeConfig.screenHeight! * 0.02),
+        SizedBox(height: screenHeight * 0.02),
         const ArticleCard(
           title: 'The Best Foods to Eat Before and After a Workout',
           author: 'Sarah Nutrition',
