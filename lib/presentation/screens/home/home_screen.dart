@@ -8,6 +8,8 @@ import '../../widgets/workout_card.dart';
 import '../../widgets/challenge_card.dart';
 import '../../widgets/article_card.dart';
 import '../../widgets/dashboard_stats.dart';
+// Add missing import for NutritionScreen
+import '../../screens/nutrition_screen.dart'; //Assuming this is the correct path
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -355,11 +357,11 @@ class _HomeScreenState extends State<HomeScreen> {
             } else if (state is WorkoutError) {
               return SizedBox(
                 height: SizeConfig.screenHeight! * 0.20,
-                child: Center(
-                  child: Text(
-                    'Error: ${state.message}',
-                    style: TextStyle(color: Colors.red),
-                  ),
+                child: ErrorRetryWidget(
+                  message: state.message,
+                  onRetry: () {
+                    context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+                  },
                 ),
               );
             } else {
@@ -512,23 +514,13 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
         } else if (state is WorkoutError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Error: ${state.message}',
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
-                  },
-                  child: const Text('Try Again'),
-                ),
-              ],
+          return SizedBox(
+            height: SizeConfig.screenHeight! * 0.20,
+            child: ErrorRetryWidget(
+              message: state.message,
+              onRetry: () {
+                context.read<WorkoutBloc>().add(FetchWorkoutsEvent());
+              },
             ),
           );
         }
