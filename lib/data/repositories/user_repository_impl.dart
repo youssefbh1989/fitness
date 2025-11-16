@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,9 +8,9 @@ import '../../domain/repositories/user_repository.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final SharedPreferences sharedPreferences;
-  
+
   UserRepositoryImpl({required this.sharedPreferences});
-  
+
   @override
   Future<Either<Failure, User>> getUserProfile() async {
     try {
@@ -24,7 +23,7 @@ class UserRepositoryImpl implements UserRepository {
       return Left(UnknownFailure(message: e.toString()));
     }
   }
-  
+
   @override
   Future<Either<Failure, User>> updateUserProfile(User user) async {
     try {
@@ -34,13 +33,13 @@ class UserRepositoryImpl implements UserRepository {
       return Left(UnknownFailure(message: e.toString()));
     }
   }
-  
+
   @override
   Future<Either<Failure, bool>> updateUserPassword(String currentPassword, String newPassword) async {
     try {
       // Mock implementation for demo purposes
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (currentPassword == 'password') {
         // In a real app, we would update the password in a backend service
         return const Right(true);
@@ -49,38 +48,6 @@ class UserRepositoryImpl implements UserRepository {
       }
     } catch (e) {
       return Left(UnknownFailure(message: e.toString()));
-    }
-  }
-}
-import 'package:dartz/dartz.dart';
-import '../../core/error/failures.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/user_repository.dart';
-import '../datasources/user_data_source.dart';
-import '../models/user_model.dart';
-
-class UserRepositoryImpl implements UserRepository {
-  final UserDataSource dataSource;
-
-  UserRepositoryImpl({required this.dataSource});
-
-  @override
-  Future<Either<Failure, User>> getUserProfile() async {
-    try {
-      final userModel = await dataSource.getUserProfile();
-      return Right(userModel);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to fetch user profile'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> updateUserProfile(User user) async {
-    try {
-      final userModel = await dataSource.updateUserProfile(UserModel.fromEntity(user));
-      return Right(userModel);
-    } catch (e) {
-      return Left(ServerFailure(message: 'Failed to update user profile'));
     }
   }
 }
