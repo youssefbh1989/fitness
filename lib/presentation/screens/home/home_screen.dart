@@ -8,6 +8,8 @@ import '../../widgets/workout_card.dart';
 import '../../widgets/challenge_card.dart';
 import '../../widgets/article_card.dart';
 import '../../widgets/dashboard_stats.dart';
+import '../../widgets/error_retry_widget.dart'; // Assuming this widget exists
+import '../../widgets/loading_widget.dart'; // Assuming this widget exists
 // Add missing import for NutritionScreen
 import '../../screens/nutrition_screen.dart'; //Assuming this is the correct path
 
@@ -138,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
         String profileImage = 'assets/images/profile_placeholder.png';
 
         if (state is UserLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingWidget();
         } else if (state is UserLoaded) {
           // Split name and use first part or default if empty
           final nameParts = state.user.name.split(' ');
@@ -328,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (state is WorkoutLoading) {
               return SizedBox(
                 height: SizeConfig.screenHeight! * 0.20,
-                child: const Center(child: CircularProgressIndicator()),
+                child: const LoadingWidget(),
               );
             } else if (state is WorkoutLoaded) {
               if (state.workouts.isEmpty) {
@@ -479,7 +481,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocBuilder<WorkoutBloc, WorkoutState>(
       builder: (context, state) {
         if (state is WorkoutLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         } else if (state is WorkoutLoaded) {
           if (state.workouts.isEmpty) {
             return Center(
@@ -539,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state is UserLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: LoadingWidget());
         } else if (state is UserLoaded) {
           final user = state.user;
 

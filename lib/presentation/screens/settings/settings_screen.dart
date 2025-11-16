@@ -1,9 +1,19 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/utils/size_config.dart';
 import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_event.dart';
+
+// Assuming LoadingWidget is defined elsewhere and imported
+// For demonstration, let's define a placeholder LoadingWidget here:
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: CircularProgressIndicator());
+  }
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -17,7 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifications = true;
   String _unitSystem = 'Metric';
   String _language = 'English';
-  
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -36,9 +46,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: BlocBuilder<UserBloc, UserState>(
         builder: (context, state) {
           if (state is UserLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingWidget();
           }
-          
+
           return SingleChildScrollView(
             padding: EdgeInsets.all(SizeConfig.screenWidth! * 0.05),
             child: Column(
