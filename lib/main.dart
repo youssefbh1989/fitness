@@ -159,12 +159,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               Locale('it', ''), // Italian
               Locale('ar', ''), // Arabic
             ],
-            localizationsDelegates: const [
-              //AppLocalizations.delegate, // Assuming this is defined elsewhere
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
             locale: state is SettingsLoaded ? Locale(state.settings.language) : null,
             navigatorObservers: [
               di.sl<AnalyticsService>().getAnalyticsObserver(),
