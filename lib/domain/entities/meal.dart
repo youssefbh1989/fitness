@@ -58,6 +58,32 @@ class Meal extends Equatable {
     );
   }
 
+  Meal copyWith({
+    String? id,
+    String? name,
+    String? type,
+    int? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+    String? imageUrl,
+    DateTime? timestamp,
+    List<String>? foods,
+  }) {
+    return Meal(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      imageUrl: imageUrl ?? this.imageUrl,
+      timestamp: timestamp ?? this.timestamp,
+      foods: foods ?? this.foods,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id, name, type, calories, protein, carbs, fat,

@@ -1,3 +1,4 @@
+
 import 'package:equatable/equatable.dart';
 
 class NutritionPlan extends Equatable {
@@ -18,6 +19,50 @@ class NutritionPlan extends Equatable {
     required this.meals,
     this.isPremium = false,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'goal': goal,
+      'meals': meals.map((m) => m.toJson()).toList(),
+      'isPremium': isPremium,
+    };
+  }
+
+  factory NutritionPlan.fromJson(Map<String, dynamic> json) {
+    return NutritionPlan(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      imageUrl: json['imageUrl'],
+      goal: json['goal'],
+      meals: (json['meals'] as List).map((m) => MealPlan.fromJson(m)).toList(),
+      isPremium: json['isPremium'] ?? false,
+    );
+  }
+
+  NutritionPlan copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? imageUrl,
+    String? goal,
+    List<MealPlan>? meals,
+    bool? isPremium,
+  }) {
+    return NutritionPlan(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      goal: goal ?? this.goal,
+      meals: meals ?? this.meals,
+      isPremium: isPremium ?? this.isPremium,
+    );
+  }
 
   @override
   List<Object?> get props => [id, title, description, imageUrl, goal, meals, isPremium];
@@ -46,6 +91,34 @@ class MealPlan extends Equatable {
     required this.totalFat,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'imageUrl': imageUrl,
+      'dailyMeals': dailyMeals.map((d) => d.toJson()).toList(),
+      'totalCalories': totalCalories,
+      'totalProtein': totalProtein,
+      'totalCarbs': totalCarbs,
+      'totalFat': totalFat,
+    };
+  }
+
+  factory MealPlan.fromJson(Map<String, dynamic> json) {
+    return MealPlan(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      imageUrl: json['imageUrl'],
+      dailyMeals: (json['dailyMeals'] as List).map((d) => DailyMeal.fromJson(d)).toList(),
+      totalCalories: json['totalCalories'],
+      totalProtein: json['totalProtein'].toDouble(),
+      totalCarbs: json['totalCarbs'].toDouble(),
+      totalFat: json['totalFat'].toDouble(),
+    );
+  }
+
   @override
   List<Object?> get props => [id, name, description, imageUrl, dailyMeals, totalCalories, totalProtein, totalCarbs, totalFat];
 }
@@ -53,7 +126,7 @@ class MealPlan extends Equatable {
 class DailyMeal extends Equatable {
   final String id;
   final String day;
-  final List<Meal> meals;
+  final List<MealPlanItem> meals;
 
   const DailyMeal({
     required this.id,
@@ -61,11 +134,28 @@ class DailyMeal extends Equatable {
     required this.meals,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'day': day,
+      'meals': meals.map((m) => m.toJson()).toList(),
+    };
+  }
+
+  factory DailyMeal.fromJson(Map<String, dynamic> json) {
+    return DailyMeal(
+      id: json['id'],
+      day: json['day'],
+      meals: (json['meals'] as List).map((m) => MealPlanItem.fromJson(m)).toList(),
+    );
+  }
+
   @override
   List<Object?> get props => [id, day, meals];
 }
 
-class Meal extends Equatable {
+// Renamed from Meal to MealPlanItem to avoid conflict with lib/domain/entities/meal.dart
+class MealPlanItem extends Equatable {
   final String id;
   final String name;
   final String type;
@@ -76,9 +166,8 @@ class Meal extends Equatable {
   final String time;
   final String imageUrl;
   final List<String> ingredients;
-  final Map<String, int> macros;
 
-  const Meal({
+  const MealPlanItem({
     required this.id,
     required this.name,
     required this.type,
@@ -89,11 +178,40 @@ class Meal extends Equatable {
     required this.time,
     required this.imageUrl,
     required this.ingredients,
-    required this.macros,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'type': type,
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+      'time': time,
+      'imageUrl': imageUrl,
+      'ingredients': ingredients,
+    };
+  }
+
+  factory MealPlanItem.fromJson(Map<String, dynamic> json) {
+    return MealPlanItem(
+      id: json['id'],
+      name: json['name'],
+      type: json['type'],
+      calories: json['calories'],
+      protein: json['protein'].toDouble(),
+      carbs: json['carbs'].toDouble(),
+      fat: json['fat'].toDouble(),
+      time: json['time'],
+      imageUrl: json['imageUrl'],
+      ingredients: List<String>.from(json['ingredients']),
+    );
+  }
+
   @override
-  List<Object?> get props => [id, name, type, calories, protein, carbs, fat, time, imageUrl, ingredients, macros];
+  List<Object?> get props => [id, name, type, calories, protein, carbs, fat, time, imageUrl, ingredients];
 }
 
 class Nutrition extends Equatable {
@@ -161,6 +279,36 @@ class Nutrition extends Equatable {
     );
   }
 
+  Nutrition copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? imageUrl,
+    int? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+    String? category,
+    String? servingSize,
+    List<String>? ingredients,
+    String? instructions,
+  }) {
+    return Nutrition(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      category: category ?? this.category,
+      servingSize: servingSize ?? this.servingSize,
+      ingredients: ingredients ?? this.ingredients,
+      instructions: instructions ?? this.instructions,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id, name, description, imageUrl, calories,
@@ -191,6 +339,58 @@ class NutritionItem extends Equatable {
     required this.category,
     this.imageUrl,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+      'servingSize': servingSize,
+      'category': category,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  factory NutritionItem.fromJson(Map<String, dynamic> json) {
+    return NutritionItem(
+      id: json['id'],
+      name: json['name'],
+      calories: json['calories'],
+      protein: json['protein'].toDouble(),
+      carbs: json['carbs'].toDouble(),
+      fat: json['fat'].toDouble(),
+      servingSize: json['servingSize'],
+      category: json['category'],
+      imageUrl: json['imageUrl'],
+    );
+  }
+
+  NutritionItem copyWith({
+    String? id,
+    String? name,
+    int? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+    String? servingSize,
+    String? category,
+    String? imageUrl,
+  }) {
+    return NutritionItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      servingSize: servingSize ?? this.servingSize,
+      category: category ?? this.category,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
 
   @override
   List<Object?> get props => [id, name, calories, protein, carbs, fat, servingSize, category, imageUrl];

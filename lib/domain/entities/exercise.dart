@@ -66,6 +66,36 @@ class Exercise extends Equatable {
     );
   }
 
+  Exercise copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? imageUrl,
+    String? videoUrl,
+    int? sets,
+    int? reps,
+    int? duration,
+    String? equipment,
+    String? category,
+    String? muscleGroup,
+    List<String>? instructions,
+  }) {
+    return Exercise(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      videoUrl: videoUrl ?? this.videoUrl,
+      sets: sets ?? this.sets,
+      reps: reps ?? this.reps,
+      duration: duration ?? this.duration,
+      equipment: equipment ?? this.equipment,
+      category: category ?? this.category,
+      muscleGroup: muscleGroup ?? this.muscleGroup,
+      instructions: instructions ?? this.instructions,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id, name, description, imageUrl, videoUrl, 
