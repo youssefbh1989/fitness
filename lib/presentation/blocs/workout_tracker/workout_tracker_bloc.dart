@@ -1,4 +1,4 @@
-
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/workout.dart';
@@ -92,7 +92,7 @@ class WorkoutTrackerLoading extends WorkoutTrackerState {}
 
 class WorkoutTrackingInProgress extends WorkoutTrackerState {
   final Map<String, List<ExerciseSet>> exerciseSets;
-  
+
   const WorkoutTrackingInProgress({required this.exerciseSets});
 
   List<ExerciseSet> getExerciseSets(String exerciseId) {
@@ -160,7 +160,7 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
     try {
       final workout = event.workout;
       final Map<String, List<ExerciseSet>> exerciseSets = {};
-      
+
       // Initialize exercise sets
       for (final exercise in workout.exercises) {
         final sets = List.generate(
@@ -172,10 +172,10 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
             isCompleted: false,
           ),
         );
-        
+
         exerciseSets[exercise.id] = sets;
       }
-      
+
       emit(WorkoutTrackingInProgress(exerciseSets: exerciseSets));
     } catch (e) {
       emit(WorkoutTrackingError(message: e.toString()));
@@ -187,10 +187,10 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
       if (state is WorkoutTrackingInProgress) {
         final currentState = state as WorkoutTrackingInProgress;
         final newExerciseSets = Map<String, List<ExerciseSet>>.from(currentState.exerciseSets);
-        
+
         final exerciseSets = List<ExerciseSet>.from(newExerciseSets[event.exerciseId] ?? []);
         final setIndex = exerciseSets.indexWhere((set) => set.id == event.setId);
-        
+
         if (setIndex != -1) {
           exerciseSets[setIndex] = ExerciseSet(
             id: event.setId,
@@ -198,7 +198,7 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
             reps: event.reps,
             isCompleted: exerciseSets[setIndex].isCompleted,
           );
-          
+
           newExerciseSets[event.exerciseId] = exerciseSets;
           emit(WorkoutTrackingInProgress(exerciseSets: newExerciseSets));
         }
@@ -213,10 +213,10 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
       if (state is WorkoutTrackingInProgress) {
         final currentState = state as WorkoutTrackingInProgress;
         final newExerciseSets = Map<String, List<ExerciseSet>>.from(currentState.exerciseSets);
-        
+
         final exerciseSets = List<ExerciseSet>.from(newExerciseSets[event.exerciseId] ?? []);
         final setIndex = exerciseSets.indexWhere((set) => set.id == event.setId);
-        
+
         if (setIndex != -1) {
           exerciseSets[setIndex] = ExerciseSet(
             id: event.setId,
@@ -224,7 +224,7 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
             reps: exerciseSets[setIndex].reps,
             isCompleted: event.completed,
           );
-          
+
           newExerciseSets[event.exerciseId] = exerciseSets;
           emit(WorkoutTrackingInProgress(exerciseSets: newExerciseSets));
         }
@@ -239,9 +239,9 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
       if (state is WorkoutTrackingInProgress) {
         final currentState = state as WorkoutTrackingInProgress;
         final newExerciseSets = Map<String, List<ExerciseSet>>.from(currentState.exerciseSets);
-        
+
         final exerciseSets = List<ExerciseSet>.from(newExerciseSets[event.exerciseId] ?? []);
-        
+
         // Create a new set with default values or copied from the last set if available
         final newSet = exerciseSets.isNotEmpty
             ? ExerciseSet(
@@ -256,10 +256,10 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
                 reps: 0,
                 isCompleted: false,
               );
-        
+
         exerciseSets.add(newSet);
         newExerciseSets[event.exerciseId] = exerciseSets;
-        
+
         emit(WorkoutTrackingInProgress(exerciseSets: newExerciseSets));
       }
     } catch (e) {
@@ -271,16 +271,16 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
     try {
       if (state is WorkoutTrackingInProgress) {
         final currentState = state as WorkoutTrackingInProgress;
-        
+
         // Calculate workout statistics
         int totalSets = 0;
         int totalSetsCompleted = 0;
         double totalWeightLifted = 0;
-        
+
         for (final entry in currentState.exerciseSets.entries) {
           final sets = entry.value;
           totalSets += sets.length;
-          
+
           for (final set in sets) {
             if (set.isCompleted) {
               totalSetsCompleted++;
@@ -288,14 +288,14 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
             }
           }
         }
-        
+
         // Save workout data
         final result = await completeWorkoutUseCase.execute(
           workout: event.workout,
           duration: event.duration,
           exerciseSets: currentState.exerciseSets,
         );
-        
+
         result.fold(
           (failure) => emit(WorkoutTrackingError(message: failure.message)),
           (_) => emit(WorkoutTrackingCompleted(
@@ -313,6 +313,8 @@ class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> 
     }
   }
 }
+
+// Added timer functionality and related events/states
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -324,111 +326,150 @@ part 'workout_tracker_event.dart';
 part 'workout_tracker_state.dart';
 
 class WorkoutTrackerBloc extends Bloc<WorkoutTrackerEvent, WorkoutTrackerState> {
-  final WorkoutRepository workoutRepository;
-  
-  WorkoutTrackerBloc({required this.workoutRepository}) : super(WorkoutTrackerInitial()) {
+  Timer? _workoutTimer;
+  int _elapsedSeconds = 0;
+
+  WorkoutTrackerBloc() : super(WorkoutTrackerInitial()) {
     on<StartWorkoutEvent>(_onStartWorkout);
-    on<CompleteExerciseSetEvent>(_onCompleteExerciseSet);
-    on<UpdateExerciseSetEvent>(_onUpdateExerciseSet);
+    on<PauseWorkoutEvent>(_onPauseWorkout);
+    on<ResumeWorkoutEvent>(_onResumeWorkout);
+    on<CompleteExerciseEvent>(_onCompleteExercise);
+    on<SkipExerciseEvent>(_onSkipExercise);
+    on<StartRestTimerEvent>(_onStartRestTimer);
+    on<SkipRestEvent>(_onSkipRest);
     on<CompleteWorkoutEvent>(_onCompleteWorkout);
-    on<CancelWorkoutEvent>(_onCancelWorkout);
+    on<UpdateTimerEvent>(_onUpdateTimer);
   }
 
-  Future<void> _onStartWorkout(
-    StartWorkoutEvent event,
-    Emitter<WorkoutTrackerState> emit,
-  ) async {
-    emit(WorkoutTrackerLoading());
-    try {
-      final workout = event.workout;
-      emit(WorkoutTrackerActive(
-        workout: workout,
-        currentExerciseIndex: 0,
-        completedSets: [],
-        startTime: DateTime.now(),
+  void _onStartWorkout(StartWorkoutEvent event, Emitter<WorkoutTrackerState> emit) {
+    _elapsedSeconds = 0;
+    _startTimer();
+
+    emit(WorkoutInProgress(
+      workout: event.workout,
+      currentExerciseIndex: 0,
+      completedExercises: [],
+      elapsedSeconds: 0,
+      isResting: false,
+      isPaused: false,
+    ));
+  }
+
+  void _onPauseWorkout(PauseWorkoutEvent event, Emitter<WorkoutTrackerState> emit) {
+    _workoutTimer?.cancel();
+
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      emit(currentState.copyWith(isPaused: true));
+    }
+  }
+
+  void _onResumeWorkout(ResumeWorkoutEvent event, Emitter<WorkoutTrackerState> emit) {
+    _startTimer();
+
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      emit(currentState.copyWith(isPaused: false));
+    }
+  }
+
+  void _onCompleteExercise(CompleteExerciseEvent event, Emitter<WorkoutTrackerState> emit) {
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      final completedExercises = List<String>.from(currentState.completedExercises)
+        ..add(currentState.workout.exercises[currentState.currentExerciseIndex].id);
+
+      final nextIndex = currentState.currentExerciseIndex + 1;
+
+      if (nextIndex >= currentState.workout.exercises.length) {
+        add(CompleteWorkoutEvent());
+      } else {
+        emit(currentState.copyWith(
+          currentExerciseIndex: nextIndex,
+          completedExercises: completedExercises,
+        ));
+      }
+    }
+  }
+
+  void _onSkipExercise(SkipExerciseEvent event, Emitter<WorkoutTrackerState> emit) {
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      final nextIndex = currentState.currentExerciseIndex + 1;
+
+      if (nextIndex >= currentState.workout.exercises.length) {
+        add(CompleteWorkoutEvent());
+      } else {
+        emit(currentState.copyWith(currentExerciseIndex: nextIndex));
+      }
+    }
+  }
+
+  void _onStartRestTimer(StartRestTimerEvent event, Emitter<WorkoutTrackerState> emit) {
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      emit(currentState.copyWith(
+        isResting: true,
+        restSeconds: event.seconds,
       ));
-    } catch (e) {
-      emit(WorkoutTrackerError(message: e.toString()));
     }
   }
 
-  Future<void> _onCompleteExerciseSet(
-    CompleteExerciseSetEvent event,
-    Emitter<WorkoutTrackerState> emit,
-  ) async {
-    if (state is WorkoutTrackerActive) {
-      final currentState = state as WorkoutTrackerActive;
-      try {
-        final updatedSets = List<ExerciseSet>.from(currentState.completedSets)
-          ..add(event.exerciseSet);
-        
-        emit(WorkoutTrackerActive(
-          workout: currentState.workout,
-          currentExerciseIndex: event.moveToNextExercise 
-              ? currentState.currentExerciseIndex + 1 
-              : currentState.currentExerciseIndex,
-          completedSets: updatedSets,
-          startTime: currentState.startTime,
-        ));
-      } catch (e) {
-        emit(WorkoutTrackerError(message: e.toString()));
-      }
+  void _onSkipRest(SkipRestEvent event, Emitter<WorkoutTrackerState> emit) {
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      emit(currentState.copyWith(isResting: false, restSeconds: 0));
     }
   }
 
-  Future<void> _onUpdateExerciseSet(
-    UpdateExerciseSetEvent event,
-    Emitter<WorkoutTrackerState> emit,
-  ) async {
-    if (state is WorkoutTrackerActive) {
-      final currentState = state as WorkoutTrackerActive;
-      try {
-        final updatedSets = List<ExerciseSet>.from(currentState.completedSets);
-        final index = updatedSets.indexWhere((set) => set.id == event.exerciseSet.id);
-        
-        if (index != -1) {
-          updatedSets[index] = event.exerciseSet;
+  void _onCompleteWorkout(CompleteWorkoutEvent event, Emitter<WorkoutTrackerState> emit) {
+    _workoutTimer?.cancel();
+
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+      emit(WorkoutCompleted(
+        workout: currentState.workout,
+        totalSeconds: _elapsedSeconds,
+        completedExercises: currentState.completedExercises,
+      ));
+    }
+  }
+
+  void _onUpdateTimer(UpdateTimerEvent event, Emitter<WorkoutTrackerState> emit) {
+    _elapsedSeconds++;
+
+    if (state is WorkoutInProgress) {
+      final currentState = state as WorkoutInProgress;
+
+      if (currentState.isResting && currentState.restSeconds > 0) {
+        final newRestSeconds = currentState.restSeconds - 1;
+        if (newRestSeconds <= 0) {
+          emit(currentState.copyWith(
+            elapsedSeconds: _elapsedSeconds,
+            isResting: false,
+            restSeconds: 0,
+          ));
+        } else {
+          emit(currentState.copyWith(
+            elapsedSeconds: _elapsedSeconds,
+            restSeconds: newRestSeconds,
+          ));
         }
-        
-        emit(WorkoutTrackerActive(
-          workout: currentState.workout,
-          currentExerciseIndex: currentState.currentExerciseIndex,
-          completedSets: updatedSets,
-          startTime: currentState.startTime,
-        ));
-      } catch (e) {
-        emit(WorkoutTrackerError(message: e.toString()));
+      } else {
+        emit(currentState.copyWith(elapsedSeconds: _elapsedSeconds));
       }
     }
   }
 
-  Future<void> _onCompleteWorkout(
-    CompleteWorkoutEvent event,
-    Emitter<WorkoutTrackerState> emit,
-  ) async {
-    if (state is WorkoutTrackerActive) {
-      final currentState = state as WorkoutTrackerActive;
-      emit(WorkoutTrackerSaving());
-      
-      try {
-        final completedWorkout = await workoutRepository.saveCompletedWorkout(
-          workout: currentState.workout,
-          completedSets: currentState.completedSets,
-          startTime: currentState.startTime,
-          endTime: DateTime.now(),
-        );
-        
-        emit(WorkoutTrackerCompleted(completedWorkout: completedWorkout));
-      } catch (e) {
-        emit(WorkoutTrackerError(message: e.toString()));
-      }
-    }
+  void _startTimer() {
+    _workoutTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      add(UpdateTimerEvent());
+    });
   }
 
-  Future<void> _onCancelWorkout(
-    CancelWorkoutEvent event,
-    Emitter<WorkoutTrackerState> emit,
-  ) async {
-    emit(WorkoutTrackerInitial());
+  @override
+  Future<void> close() {
+    _workoutTimer?.cancel();
+    return super.close();
   }
 }

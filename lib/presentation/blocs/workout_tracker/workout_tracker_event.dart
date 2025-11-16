@@ -1,44 +1,40 @@
-
 part of 'workout_tracker_bloc.dart';
 
 abstract class WorkoutTrackerEvent extends Equatable {
   const WorkoutTrackerEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class StartWorkoutEvent extends WorkoutTrackerEvent {
   final Workout workout;
 
-  const StartWorkoutEvent({required this.workout});
+  const StartWorkoutEvent(this.workout);
 
   @override
-  List<Object> get props => [workout];
+  List<Object?> get props => [workout];
 }
 
-class CompleteExerciseSetEvent extends WorkoutTrackerEvent {
-  final ExerciseSet exerciseSet;
-  final bool moveToNextExercise;
+class PauseWorkoutEvent extends WorkoutTrackerEvent {}
 
-  const CompleteExerciseSetEvent({
-    required this.exerciseSet, 
-    this.moveToNextExercise = false,
-  });
+class ResumeWorkoutEvent extends WorkoutTrackerEvent {}
+
+class CompleteExerciseEvent extends WorkoutTrackerEvent {}
+
+class SkipExerciseEvent extends WorkoutTrackerEvent {}
+
+class StartRestTimerEvent extends WorkoutTrackerEvent {
+  final int seconds;
+
+  const StartRestTimerEvent(this.seconds);
 
   @override
-  List<Object> get props => [exerciseSet, moveToNextExercise];
+  List<Object?> get props => [seconds];
 }
 
-class UpdateExerciseSetEvent extends WorkoutTrackerEvent {
-  final ExerciseSet exerciseSet;
-
-  const UpdateExerciseSetEvent({required this.exerciseSet});
-
-  @override
-  List<Object> get props => [exerciseSet];
-}
+class SkipRestEvent extends WorkoutTrackerEvent {}
 
 class CompleteWorkoutEvent extends WorkoutTrackerEvent {}
 
-class CancelWorkoutEvent extends WorkoutTrackerEvent {}
+class UpdateTimerEvent extends WorkoutTrackerEvent {}

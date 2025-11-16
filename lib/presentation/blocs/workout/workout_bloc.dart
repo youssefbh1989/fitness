@@ -107,16 +107,16 @@ class WorkoutError extends WorkoutState {
 
 // BLoC
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
-  final GetWorkoutsUseCase getWorkouts;
-  final GetWorkoutByIdUseCase getWorkoutById;
-  final GetWorkoutsByCategoryUseCase getWorkoutsByCategory;
+  final GetWorkoutsUseCase getWorkoutsUseCase;
+  final GetWorkoutByIdUseCase getWorkoutByIdUseCase;
+  final GetWorkoutsByCategoryUseCase getWorkoutsByCategoryUseCase;
   final GetFeaturedWorkoutsUseCase getFeaturedWorkouts;
   final GetWorkoutCategoriesUseCase getWorkoutCategories;
 
   WorkoutBloc({
-    required this.getWorkouts,
-    required this.getWorkoutById,
-    required this.getWorkoutsByCategory,
+    required this.getWorkoutsUseCase,
+    required this.getWorkoutByIdUseCase,
+    required this.getWorkoutsByCategoryUseCase,
     required this.getFeaturedWorkouts,
     required this.getWorkoutCategories,
   }) : super(WorkoutInitial()) {
@@ -130,7 +130,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
   Future<void> _onGetAllWorkouts(GetAllWorkouts event, Emitter<WorkoutState> emit) async {
     emit(WorkoutLoading());
-    final result = await getWorkouts(NoParams());
+    final result = await getWorkoutsUseCase(NoParams());
     result.fold(
       (failure) => emit(WorkoutError(failure.message)),
       (workouts) => emit(WorkoutLoaded(workouts)),
@@ -139,7 +139,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
   Future<void> _onGetWorkoutById(GetWorkoutById event, Emitter<WorkoutState> emit) async {
     emit(WorkoutLoading());
-    final result = await getWorkoutById(Params(event.id));
+    final result = await getWorkoutByIdUseCase(Params(event.id));
     result.fold(
       (failure) => emit(WorkoutError(failure.message)),
       (workout) => emit(WorkoutDetailLoaded(workout)),
@@ -148,7 +148,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
   Future<void> _onGetWorkoutsByCategory(GetWorkoutsByCategory event, Emitter<WorkoutState> emit) async {
     emit(WorkoutLoading());
-    final result = await getWorkoutsByCategory(Params(event.category));
+    final result = await getWorkoutsByCategoryUseCase(Params(event.category));
     result.fold(
       (failure) => emit(WorkoutError(failure.message)),
       (workouts) => emit(WorkoutLoaded(workouts)),
@@ -173,9 +173,14 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     );
   }
 
-  Future<void> _onSearchWorkouts(SearchWorkouts event, Emitter<WorkoutState> emit) async {
+  Future<void> _onSearchWorkouts(
+    SearchWorkouts event,
+    Emitter<WorkoutState> emit,
+  ) async {
     emit(WorkoutLoading());
-    final result = await getWorkouts(NoParams());
+
+    final result = await getWorkoutsUseCase(NoParams());
+
     result.fold(
       (failure) => emit(WorkoutError(failure.message)),
       (workouts) {

@@ -5,7 +5,7 @@ abstract class WorkoutState extends Equatable {
   const WorkoutState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class WorkoutInitial extends WorkoutState {}
@@ -18,7 +18,7 @@ class WorkoutsLoaded extends WorkoutState {
   const WorkoutsLoaded(this.workouts);
 
   @override
-  List<Object> get props => [workouts];
+  List<Object?> get props => [workouts];
 }
 
 class WorkoutDetailLoaded extends WorkoutState {
@@ -27,7 +27,7 @@ class WorkoutDetailLoaded extends WorkoutState {
   const WorkoutDetailLoaded(this.workout);
 
   @override
-  List<Object> get props => [workout];
+  List<Object?> get props => [workout];
 }
 
 class WorkoutCategoriesLoading extends WorkoutState {}
@@ -38,7 +38,7 @@ class WorkoutCategoriesLoaded extends WorkoutState {
   const WorkoutCategoriesLoaded(this.categories);
 
   @override
-  List<Object> get props => [categories];
+  List<Object?> get props => [categories];
 }
 
 class WorkoutSearchResults extends WorkoutState {
@@ -48,7 +48,7 @@ class WorkoutSearchResults extends WorkoutState {
   const WorkoutSearchResults(this.workouts, this.query);
 
   @override
-  List<Object> get props => [workouts, query];
+  List<Object?> get props => [workouts, query];
 }
 
 class WorkoutError extends WorkoutState {
@@ -57,7 +57,7 @@ class WorkoutError extends WorkoutState {
   const WorkoutError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
 
 class WorkoutsBycategoryLoaded extends WorkoutState {
@@ -67,7 +67,7 @@ class WorkoutsBycategoryLoaded extends WorkoutState {
   const WorkoutsBycategoryLoaded(this.workouts, this.category);
 
   @override
-  List<Object> get props => [workouts, category];
+  List<Object?> get props => [workouts, category];
 }
 
 class FeaturedWorkoutsLoaded extends WorkoutState {
@@ -76,93 +76,5 @@ class FeaturedWorkoutsLoaded extends WorkoutState {
   const FeaturedWorkoutsLoaded(this.workouts);
 
   @override
-  List<Object> get props => [workouts];
-}
-import 'package:equatable/equatable.dart';
-import '../../../domain/entities/workout.dart';
-
-abstract class WorkoutState extends Equatable {
-  const WorkoutState();
-  
-  @override
-  List<Object?> get props => [];
-}
-
-class WorkoutInitial extends WorkoutState {}
-
-class WorkoutLoading extends WorkoutState {}
-
-class WorkoutsLoaded extends WorkoutState {
-  final List<Workout> workouts;
-  
-  const WorkoutsLoaded(this.workouts);
-  
-  @override
-  List<Object> get props => [workouts];
-}
-
-class FeaturedWorkoutsLoaded extends WorkoutState {
-  final List<Workout> workouts;
-  
-  const FeaturedWorkoutsLoaded(this.workouts);
-  
-  @override
-  List<Object> get props => [workouts];
-}
-
-class WorkoutLoaded extends WorkoutState {
-  final Workout workout;
-  
-  const WorkoutLoaded(this.workout);
-  
-  @override
-  List<Object> get props => [workout];
-}
-
-class WorkoutCategoriesLoaded extends WorkoutState {
-  final List<String> categories;
-  
-  const WorkoutCategoriesLoaded(this.categories);
-  
-  @override
-  List<Object> get props => [categories];
-}
-
-class WorkoutError extends WorkoutState {
-  final String message;
-  
-  const WorkoutError(this.message);
-  
-  @override
-  List<Object> get props => [message];
-}
-part of 'workout_bloc.dart';
-
-abstract class WorkoutState extends Equatable {
-  const WorkoutState();
-  
-  @override
-  List<Object> get props => [];
-}
-
-class WorkoutInitial extends WorkoutState {}
-
-class WorkoutLoading extends WorkoutState {}
-
-class WorkoutLoaded extends WorkoutState {
-  final List<Workout> workouts;
-
-  const WorkoutLoaded({required this.workouts});
-
-  @override
-  List<Object> get props => [workouts];
-}
-
-class WorkoutError extends WorkoutState {
-  final String message;
-
-  const WorkoutError({required this.message});
-
-  @override
-  List<Object> get props => [message];
+  List<Object?> get props => [workouts];
 }

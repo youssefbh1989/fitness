@@ -4,37 +4,29 @@ abstract class WorkoutEvent extends Equatable {
   const WorkoutEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class GetAllWorkouts extends WorkoutEvent {
-  const GetAllWorkouts();
+class LoadWorkoutsEvent extends WorkoutEvent {
+  const LoadWorkoutsEvent();
 }
 
-class GetWorkoutById extends WorkoutEvent {
-  final String id;
+class LoadWorkoutDetailEvent extends WorkoutEvent {
+  final String workoutId;
 
-  const GetWorkoutById(this.id);
+  const LoadWorkoutDetailEvent(this.workoutId);
 
   @override
-  List<Object> get props => [id];
+  List<Object?> get props => [workoutId];
 }
 
-class GetWorkoutsByCategory extends WorkoutEvent {
+class LoadWorkoutsByCategoryEvent extends WorkoutEvent {
   final String category;
 
-  const GetWorkoutsByCategory(this.category);
+  const LoadWorkoutsByCategoryEvent(this.category);
 
   @override
-  List<Object> get props => [category];
-}
-
-class GetFeaturedWorkouts extends WorkoutEvent {
-  const GetFeaturedWorkouts();
-}
-
-class GetWorkoutCategories extends WorkoutEvent {
-  const GetWorkoutCategories();
+  List<Object?> get props => [category];
 }
 
 class SearchWorkouts extends WorkoutEvent {
@@ -43,47 +35,5 @@ class SearchWorkouts extends WorkoutEvent {
   const SearchWorkouts(this.query);
 
   @override
-  List<Object> get props => [query];
+  List<Object?> get props => [query];
 }
-import 'package:equatable/equatable.dart';
-
-abstract class WorkoutEvent extends Equatable {
-  const WorkoutEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
-class GetWorkoutsEvent extends WorkoutEvent {}
-
-class GetWorkoutByIdEvent extends WorkoutEvent {
-  final String id;
-
-  const GetWorkoutByIdEvent(this.id);
-
-  @override
-  List<Object> get props => [id];
-}
-
-class GetWorkoutsByCategoryEvent extends WorkoutEvent {
-  final String category;
-
-  const GetWorkoutsByCategoryEvent(this.category);
-
-  @override
-  List<Object> get props => [category];
-}
-
-class GetFeaturedWorkoutsEvent extends WorkoutEvent {}
-
-class GetWorkoutCategoriesEvent extends WorkoutEvent {}
-part of 'workout_bloc.dart';
-
-abstract class WorkoutEvent extends Equatable {
-  const WorkoutEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
-class FetchWorkoutsEvent extends WorkoutEvent {}
