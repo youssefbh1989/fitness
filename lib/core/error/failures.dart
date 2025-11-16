@@ -1,97 +1,35 @@
-
 import 'package:equatable/equatable.dart';
 
+// Failure classes
 abstract class Failure extends Equatable {
   final String message;
-  
-  const Failure({required this.message});
-  
+
+  const Failure(this.message);
+
   @override
   List<Object> get props => [message];
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure({required String message}) : super(message: message);
+  const ServerFailure([String message = 'Server error occurred']) : super(message);
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({required String message}) : super(message: message);
+  const CacheFailure([String message = 'Cache error occurred']) : super(message);
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({required String message}) : super(message: message);
+  const NetworkFailure([String message = 'Network error occurred']) : super(message);
 }
 
 class AuthFailure extends Failure {
-  const AuthFailure({required String message}) : super(message: message);
+  const AuthFailure([String message = 'Authentication failed']) : super(message);
 }
 
 class ValidationFailure extends Failure {
-  const ValidationFailure({required String message}) : super(message: message);
+  const ValidationFailure(String message) : super(message);
 }
 
 class UnknownFailure extends Failure {
-  const UnknownFailure({required String message}) : super(message: message);
-}
-import 'package:equatable/equatable.dart';
-
-abstract class Failure extends Equatable {
-  final List properties;
-
-  const Failure([this.properties = const <dynamic>[]]);
-
-  @override
-  List<Object?> get props => [properties];
-}
-
-class ServerFailure extends Failure {
-  const ServerFailure();
-}
-
-class CacheFailure extends Failure {
-  const CacheFailure();
-}
-
-class NetworkFailure extends Failure {
-  const NetworkFailure();
-}
-
-class AuthenticationFailure extends Failure {
-  final String message;
-  
-  const AuthenticationFailure([this.message = 'Authentication failed']);
-  
-  @override
-  List<Object?> get props => [message];
-}
-import 'package:equatable/equatable.dart';
-
-abstract class Failure extends Equatable {
-  @override
-  List<Object> get props => [];
-}
-
-// General failures
-class ServerFailure extends Failure {}
-
-class CacheFailure extends Failure {}
-
-class NetworkFailure extends Failure {}
-
-class AuthFailure extends Failure {
-  final String message;
-
-  AuthFailure(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-class InputFailure extends Failure {
-  final String message;
-
-  InputFailure(this.message);
-
-  @override
-  List<Object> get props => [message];
+  const UnknownFailure([String message = 'An unknown error occurred']) : super(message);
 }

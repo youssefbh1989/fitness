@@ -1,29 +1,92 @@
-
 import 'package:equatable/equatable.dart';
 
 class Achievement extends Equatable {
   final String id;
   final String title;
   final String description;
-  final String iconUrl;
-  final int points;
-  final bool isUnlocked;
-  final DateTime? unlockedAt;
-  final double progress; // 0.0 to 1.0
-  final AchievementCategory category;
+  final String? imageUrl;
+  final String criteria;
+  final int xpPoints;
+  final DateTime? dateEarned;
+  final String? iconUrl; // Added from the first definition
+  final int points; // Added from the first definition
+  final bool isUnlocked; // Added from the first definition
+  final DateTime? unlockedAt; // Added from the first definition
+  final double progress; // Added from the first definition (0.0 to 1.0)
+  final AchievementCategory? category; // Added from the first definition
 
   const Achievement({
     required this.id,
     required this.title,
     required this.description,
-    required this.iconUrl,
-    required this.points,
-    required this.isUnlocked,
+    this.imageUrl,
+    required this.criteria,
+    required this.xpPoints,
+    this.dateEarned,
+    this.iconUrl,
+    this.points = 0, // Default value
+    this.isUnlocked = false, // Default value
     this.unlockedAt,
-    required this.progress,
-    required this.category,
+    this.progress = 0.0, // Default value
+    this.category,
   });
 
+  @override
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        imageUrl,
+        criteria,
+        xpPoints,
+        dateEarned,
+        iconUrl,
+        points,
+        isUnlocked,
+        unlockedAt,
+        progress,
+        category,
+      ];
+
+  bool get isEarned => dateEarned != null;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'criteria': criteria,
+      'xpPoints': xpPoints,
+      'dateEarned': dateEarned?.toIso8601String(),
+      'iconUrl': iconUrl,
+      'points': points,
+      'isUnlocked': isUnlocked,
+      'unlockedAt': unlockedAt?.toIso8601String(),
+      'progress': progress,
+      'category': category?.name, // Store enum name
+    };
+  }
+
+  factory Achievement.fromMap(Map<String, dynamic> map) {
+    return Achievement(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      imageUrl: map['imageUrl'],
+      criteria: map['criteria'],
+      xpPoints: map['xpPoints'] ?? 0, // Default if not present
+      dateEarned: map['dateEarned'] != null ? DateTime.parse(map['dateEarned']) : null,
+      iconUrl: map['iconUrl'],
+      points: map['points'] ?? 0, // Default if not present
+      isUnlocked: map['isUnlocked'] ?? false, // Default if not present
+      unlockedAt: map['unlockedAt'] != null ? DateTime.parse(map['unlockedAt']) : null,
+      progress: map['progress'] ?? 0.0, // Default if not present
+      category: map['category'] != null ? AchievementCategory.values.firstWhere((e) => e.name == map['category'], orElse: () => AchievementCategory.special) : null, // Handle enum conversion
+    );
+  }
+
+  // Add copyWith method from the first definition
   Achievement copyWith({
     String? id,
     String? title,
@@ -34,6 +97,10 @@ class Achievement extends Equatable {
     DateTime? unlockedAt,
     double? progress,
     AchievementCategory? category,
+    String? imageUrl,
+    String? criteria,
+    int? xpPoints,
+    DateTime? dateEarned,
   }) {
     return Achievement(
       id: id ?? this.id,
@@ -45,23 +112,15 @@ class Achievement extends Equatable {
       unlockedAt: unlockedAt ?? this.unlockedAt,
       progress: progress ?? this.progress,
       category: category ?? this.category,
+      imageUrl: imageUrl ?? this.imageUrl,
+      criteria: criteria ?? this.criteria,
+      xpPoints: xpPoints ?? this.xpPoints,
+      dateEarned: dateEarned ?? this.dateEarned,
     );
   }
-
-  @override
-  List<Object?> get props => [
-        id,
-        title,
-        description,
-        iconUrl,
-        points,
-        isUnlocked,
-        unlockedAt,
-        progress,
-        category,
-      ];
 }
 
+// Enum from the first definition
 enum AchievementCategory {
   workout,
   nutrition,
@@ -69,111 +128,23 @@ enum AchievementCategory {
   community,
   special,
 }
-import 'package:equatable/equatable.dart';
-
-class Achievement extends Equatable {
-  final String id;
-  final String name;
-  final String description;
-  final String category;
-  final bool isUnlocked;
-  final int progress; // 0-100
-  final String? progressDescription;
-  final DateTime? dateUnlocked;
-  final String? iconPath;
-
-  const Achievement({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.category,
-    required this.isUnlocked,
-    required this.progress,
-    this.progressDescription,
-    this.dateUnlocked,
-    this.iconPath,
-  });
-
-  @override
-  List<Object?> get props => [
-    id, 
-    name, 
-    description, 
-    category, 
-    isUnlocked, 
-    progress, 
-    progressDescription, 
-    dateUnlocked,
-    iconPath,
-  ];
-}
-import 'package:equatable/equatable.dart';
-
-class Achievement extends Equatable {
-  final String id;
-  final String title;
-  final String description;
-  final String? imageUrl;
-  final String criteria;
-  final int xpPoints;
-  final DateTime? dateEarned;
-  
-  const Achievement({
-    required this.id,
-    required this.title,
-    required this.description,
-    this.imageUrl,
-    required this.criteria,
-    required this.xpPoints,
-    this.dateEarned,
-  });
-  
-  @override
-  List<Object?> get props => [id, title, description, imageUrl, criteria, xpPoints, dateEarned];
-  
-  bool get isEarned => dateEarned != null;
-  
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'imageUrl': imageUrl,
-      'criteria': criteria,
-      'xpPoints': xpPoints,
-      'dateEarned': dateEarned?.toIso8601String(),
-    };
-  }
-  
-  factory Achievement.fromMap(Map<String, dynamic> map) {
-    return Achievement(
-      id: map['id'],
-      title: map['title'],
-      description: map['description'],
-      imageUrl: map['imageUrl'],
-      criteria: map['criteria'],
-      xpPoints: map['xpPoints'],
-      dateEarned: map['dateEarned'] != null ? DateTime.parse(map['dateEarned']) : null,
-    );
-  }
-}
 
 class AchievementProgress extends Equatable {
   final Achievement achievement;
   final double progress; // Value between 0.0 and 1.0
   final int currentValue;
   final int targetValue;
-  
+
   const AchievementProgress({
     required this.achievement,
     required this.progress,
     required this.currentValue,
     required this.targetValue,
   });
-  
+
   @override
   List<Object> get props => [achievement, progress, currentValue, targetValue];
-  
+
   AchievementProgress copyWith({
     Achievement? achievement,
     double? progress,
@@ -187,6 +158,6 @@ class AchievementProgress extends Equatable {
       targetValue: targetValue ?? this.targetValue,
     );
   }
-  
+
   bool get isCompleted => progress >= 1.0;
 }

@@ -12,10 +12,6 @@ author = 40001747
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export PATH=\"$PATH:`pwd`/flutter/bin\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
 args = "flutter pub get"
 
 [[workflows.workflow.tasks]]
