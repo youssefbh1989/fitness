@@ -1,4 +1,3 @@
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:path/path.dart';
@@ -8,6 +7,48 @@ import '../../../domain/entities/exercise_set.dart';
 import '../../../domain/entities/user.dart';
 import '../../../domain/entities/achievement.dart';
 import '../../../domain/entities/nutrition.dart';
+
+// SharedPreferences Helper for lightweight storage
+class SharedPreferencesHelper {
+  static Future<void> saveUserSettings(UserSettings settings) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_settings', jsonEncode(settings.toMap()));
+  }
+
+  static Future<UserSettings?> getUserSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final settingsJson = prefs.getString('user_settings');
+    if (settingsJson != null) {
+      return UserSettings.fromMap(jsonDecode(settingsJson));
+    }
+    return null;
+  }
+
+  static Future<void> setFirstTimeLaunch(bool isFirstTime) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_first_time', isFirstTime);
+  }
+
+  static Future<bool> isFirstTimeLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_first_time') ?? true;
+  }
+
+  static Future<void> setLoggedInUserId(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('logged_in_user_id', userId);
+  }
+
+  static Future<String?> getLoggedInUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('logged_in_user_id');
+  }
+
+  static Future<void> clearLoginData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('logged_in_user_id');
+  }
+}
 
 class AppDatabase {
   static final AppDatabase _instance = AppDatabase._internal();
@@ -216,10 +257,10 @@ class AppDatabase {
   Future<int> insertWorkout(Workout workout) async {
     final db = await database;
     final batch = db.batch();
-    
+
     // Insert workout
     batch.insert('workouts', workout.toMap());
-    
+
     // Insert exercises and workout_exercises
     for (var i = 0; i < workout.exercises.length; i++) {
       final exercise = workout.exercises[i];
@@ -234,7 +275,7 @@ class AppDatabase {
         'duration': exercise.defaultDuration,
       });
     }
-    
+
     await batch.commit(noResult: true);
     return 1;
   }
@@ -242,16 +283,16 @@ class AppDatabase {
   Future<List<Workout>> getAllWorkouts() async {
     final db = await database;
     final workoutMaps = await db.query('workouts');
-    
+
     if (workoutMaps.isEmpty) {
       return [];
     }
-    
+
     List<Workout> workouts = [];
-    
+
     for (var workoutMap in workoutMaps) {
       final workoutId = workoutMap['id'] as String;
-      
+
       // Get all workout exercises with join
       final exercises = await db.rawQuery('''
         SELECT e.*, we.sets, we.reps, we.weight, we.duration, we.order_index
@@ -260,11 +301,11 @@ class AppDatabase {
         WHERE we.workoutId = ?
         ORDER BY we.order_index
       ''', [workoutId]);
-      
+
       final workout = Workout.fromMap(workoutMap, exercises.map((e) => Exercise.fromMap(e)).toList());
       workouts.add(workout);
     }
-    
+
     return workouts;
   }
 
@@ -280,7 +321,7 @@ class AppDatabase {
     final db = await database;
     final completedWorkoutId = DateTime.now().millisecondsSinceEpoch.toString();
     final batch = db.batch();
-    
+
     batch.insert('completed_workouts', {
       'id': completedWorkoutId,
       'workoutId': workoutId,
@@ -289,7 +330,7 @@ class AppDatabase {
       'endTime': endTime.toIso8601String(),
       'calories': calories,
     });
-    
+
     for (var set in completedSets) {
       batch.insert('completed_sets', {
         'id': set.id,
@@ -301,7 +342,7 @@ class AppDatabase {
         'duration': set.duration,
       });
     }
-    
+
     await batch.commit(noResult: true);
     return 1;
   }
@@ -312,7 +353,7 @@ class AppDatabase {
     final maps = await db.query('achievements');
     return maps.map((map) => Achievement.fromMap(map)).toList();
   }
-  
+
   Future<List<Achievement>> getUserAchievements(String userId) async {
     final db = await database;
     final maps = await db.rawQuery('''
@@ -338,48 +379,6 @@ class AppDatabase {
     final db = await database;
     final maps = await db.query('nutrition_items');
     return maps.map((map) => NutritionItem.fromMap(map)).toList();
-  }
-}
-
-// SharedPreferences Helper for lightweight storage
-class SharedPreferencesHelper {
-  static Future<void> saveUserSettings(UserSettings settings) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_settings', jsonEncode(settings.toMap()));
-  }
-  
-  static Future<UserSettings?> getUserSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final settingsJson = prefs.getString('user_settings');
-    if (settingsJson != null) {
-      return UserSettings.fromMap(jsonDecode(settingsJson));
-    }
-    return null;
-  }
-  
-  static Future<void> setFirstTimeLaunch(bool isFirstTime) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('is_first_time', isFirstTime);
-  }
-  
-  static Future<bool> isFirstTimeLaunch() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('is_first_time') ?? true;
-  }
-  
-  static Future<void> setLoggedInUserId(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('logged_in_user_id', userId);
-  }
-  
-  static Future<String?> getLoggedInUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('logged_in_user_id');
-  }
-  
-  static Future<void> clearLoginData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('logged_in_user_id');
   }
 }
 
