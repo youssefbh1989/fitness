@@ -141,10 +141,10 @@ Future<void> init() async {
         getExerciseCategoriesUseCase: sl(),
       ));
   sl.registerFactory(() => NutritionBloc(
-        getMealPlansUseCase: sl(),
-        getNutritionByCategoryUseCase: sl(),
-        getMealPlanDetailsUseCase: sl(),
-        createMealPlanUseCase: sl(),
+        getNutritionPlansUseCase: sl(),
+        getNutritionPlanByIdUseCase: sl(),
+        getNutritionPlansByGoalUseCase: sl(),
+        getNutritionGoalsUseCase: sl(),
       ));
   sl.registerFactory(() => ProgressBloc(getProgressHistory: sl(), addProgressEntry: sl()));
   sl.registerFactory(() => NotificationBloc(
@@ -309,171 +309,6 @@ class User {
 }
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../data/datasources/user_data_source.dart';
-import '../../data/datasources/user_data_source_impl.dart';
-import '../../data/datasources/workout_data_source.dart';
-import '../../data/datasources/workout_data_source_impl.dart';
-import '../../data/datasources/auth_data_source.dart';
-import '../../data/datasources/auth_data_source_impl.dart';
-import '../../data/datasources/nutrition_data_source.dart';
-import '../../data/datasources/nutrition_data_source_impl.dart';
-import '../../data/datasources/progress_data_source.dart';
-import '../../data/datasources/progress_data_source_impl.dart';
-import '../../data/datasources/achievement_data_source.dart';
-import '../../data/datasources/achievement_data_source_impl.dart';
-
-import '../../data/repositories/user_repository_impl.dart';
-import '../../data/repositories/workout_repository_impl.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../data/repositories/nutrition_repository_impl.dart';
-import '../../data/repositories/progress_repository_impl.dart';
-import '../../data/repositories/achievement_repository_impl.dart';
-
-import '../../domain/repositories/user_repository.dart';
-import '../../domain/repositories/workout_repository.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../../domain/repositories/nutrition_repository.dart';
-import '../../domain/repositories/progress_repository.dart';
-import '../../domain/repositories/achievement_repository.dart';
-
-import '../../domain/usecases/user/get_user_profile_usecase.dart';
-import '../../domain/usecases/user/update_user_profile_usecase.dart';
-
-import '../../domain/usecases/workout/get_workouts_usecase.dart';
-import '../../domain/usecases/workout/get_workout_detail_usecase.dart';
-import '../../domain/usecases/workout/create_workout_usecase.dart';
-import '../../domain/usecases/workout/track_workout_usecase.dart';
-import '../../domain/usecases/workout/complete_workout_usecase.dart';
-
-import '../../domain/usecases/auth/login_usecase.dart';
-import '../../domain/usecases/auth/register_usecase.dart';
-import '../../domain/usecases/auth/logout_usecase.dart';
-import '../../domain/usecases/auth/check_auth_status_usecase.dart';
-
-import '../../domain/usecases/nutrition/get_nutrition_data_usecase.dart';
-import '../../domain/usecases/nutrition/add_meal_usecase.dart';
-
-import '../../domain/usecases/progress/get_progress_photos_usecase.dart';
-import '../../domain/usecases/progress/add_progress_photo_usecase.dart';
-
-import '../../domain/usecases/achievement/get_achievements_usecase.dart';
-
-import '../../presentation/blocs/user/user_bloc.dart';
-import '../../presentation/blocs/workout/workout_bloc.dart';
-import '../../presentation/blocs/auth/auth_bloc.dart';
-import '../../presentation/blocs/nutrition/nutrition_bloc.dart';
-import '../../presentation/blocs/progress/progress_bloc.dart';
-import '../../presentation/blocs/workout_tracker/workout_tracker_bloc.dart';
-import '../../presentation/blocs/achievement/achievement_bloc.dart';
-
-final sl = GetIt.instance;
-
-Future<void> init() async {
-  // External dependencies
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerSingleton<SharedPreferences>(sharedPreferences);
-
-  // Data sources
-  sl.registerLazySingleton<UserDataSource>(
-    () => UserDataSourceImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<WorkoutDataSource>(
-    () => WorkoutDataSourceImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<AuthDataSource>(
-    () => AuthDataSourceImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<NutritionDataSource>(
-    () => NutritionDataSourceImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<ProgressDataSource>(
-    () => ProgressDataSourceImpl(sharedPreferences: sl()),
-  );
-  sl.registerLazySingleton<AchievementDataSource>(
-    () => AchievementDataSourceImpl(sharedPreferences: sl()),
-  );
-
-  // Repositories
-  sl.registerLazySingleton<UserRepository>(
-    () => UserRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<WorkoutRepository>(
-    () => WorkoutRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<NutritionRepository>(
-    () => NutritionRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<ProgressRepository>(
-    () => ProgressRepositoryImpl(dataSource: sl()),
-  );
-  sl.registerLazySingleton<AchievementRepository>(
-    () => AchievementRepositoryImpl(dataSource: sl()),
-  );
-
-  // Use cases
-  sl.registerLazySingleton(() => GetUserProfileUseCase(repository: sl()));
-  sl.registerLazySingleton(() => UpdateUserProfileUseCase(repository: sl()));
-  
-  sl.registerLazySingleton(() => GetWorkoutsUseCase(repository: sl()));
-  sl.registerLazySingleton(() => GetWorkoutDetailUseCase(repository: sl()));
-  sl.registerLazySingleton(() => CreateWorkoutUseCase(repository: sl()));
-  sl.registerLazySingleton(() => TrackWorkoutUseCase(repository: sl()));
-  sl.registerLazySingleton(() => CompleteWorkoutUseCase(repository: sl()));
-  
-  sl.registerLazySingleton(() => LoginUseCase(repository: sl()));
-  sl.registerLazySingleton(() => RegisterUseCase(repository: sl()));
-  sl.registerLazySingleton(() => LogoutUseCase(repository: sl()));
-  sl.registerLazySingleton(() => CheckAuthStatusUseCase(repository: sl()));
-  
-  sl.registerLazySingleton(() => GetNutritionDataUseCase(repository: sl()));
-  sl.registerLazySingleton(() => AddMealUseCase(repository: sl()));
-  
-  sl.registerLazySingleton(() => GetProgressPhotosUseCase(repository: sl()));
-  sl.registerLazySingleton(() => AddProgressPhotoUseCase(repository: sl()));
-  
-  sl.registerLazySingleton(() => GetAchievementsUseCase(repository: sl()));
-
-  // BLoCs
-  sl.registerFactory(() => UserBloc(getUserProfileUseCase: sl()));
-  
-  sl.registerFactory(() => WorkoutBloc(
-    getWorkoutsUseCase: sl(),
-    getWorkoutDetailUseCase: sl(),
-    createWorkoutUseCase: sl(),
-  ));
-  
-  sl.registerFactory(() => AuthBloc(
-    loginUseCase: sl(),
-    registerUseCase: sl(),
-    logoutUseCase: sl(),
-    checkAuthStatusUseCase: sl(),
-  ));
-  
-  sl.registerFactory(() => NutritionBloc(
-    getNutritionDataUseCase: sl(),
-    addMealUseCase: sl(),
-  ));
-  
-  sl.registerFactory(() => ProgressBloc(
-    getProgressPhotosUseCase: sl(),
-    addProgressPhotoUseCase: sl(),
-  ));
-  
-  sl.registerFactory(() => WorkoutTrackerBloc(
-    trackWorkoutUseCase: sl(),
-    completeWorkoutUseCase: sl(),
-  ));
-  
-  sl.registerFactory(() => AchievementBloc(
-    getAchievementsUseCase: sl(),
-  ));
-}
-import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/datasources/local/app_database.dart';
 import '../../data/repositories/achievement_repository_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -502,60 +337,60 @@ Future<void> init() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerSingleton<SharedPreferences>(sharedPreferences);
   sl.registerSingleton<AppDatabase>(AppDatabase());
-  
+
   // Utils
   sl.registerSingleton<AnalyticsService>(AnalyticsService());
   sl.registerSingleton<NotificationService>(NotificationService());
-  
+
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(sharedPreferences: sl()),
   );
-  
+
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(database: sl(), sharedPreferences: sl()),
   );
-  
+
   sl.registerLazySingleton<WorkoutRepository>(
     () => WorkoutRepositoryImpl(database: sl()),
   );
-  
+
   sl.registerLazySingleton<AchievementRepository>(
     () => AchievementRepositoryImpl(database: sl()),
   );
-  
+
   sl.registerLazySingleton<NutritionRepository>(
     () => NutritionRepositoryImpl(database: sl()),
   );
-  
+
   // BLoCs
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(authRepository: sl(), userRepository: sl()),
   );
-  
+
   sl.registerFactory<UserBloc>(
     () => UserBloc(userRepository: sl()),
   );
-  
+
   sl.registerFactory<WorkoutBloc>(
     () => WorkoutBloc(workoutRepository: sl()),
   );
-  
+
   sl.registerFactory<WorkoutTrackerBloc>(
     () => WorkoutTrackerBloc(workoutRepository: sl()),
   );
-  
+
   sl.registerFactory<AchievementBloc>(
     () => AchievementBloc(
       achievementRepository: sl(),
       userRepository: sl(),
     ),
   );
-  
+
   sl.registerFactory<NutritionBloc>(
     () => NutritionBloc(nutritionRepository: sl()),
   );
-  
+
   sl.registerFactory<SettingsBloc>(
     () => SettingsBloc(sharedPreferences: sl()),
   );

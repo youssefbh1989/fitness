@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/nutrition.dart';
+import '../../../domain/entities/meal.dart';
 
 abstract class NutritionState extends Equatable {
   const NutritionState();
@@ -13,43 +14,6 @@ abstract class NutritionState extends Equatable {
 class NutritionInitial extends NutritionState {}
 
 class NutritionLoading extends NutritionState {}
-
-class MealPlansLoaded extends NutritionState {
-  final List<MealPlan> mealPlans;
-
-  const MealPlansLoaded(this.mealPlans);
-
-  @override
-  List<Object?> get props => [mealPlans];
-}
-
-class NutritionCategoryLoaded extends NutritionState {
-  final List<Nutrition> nutritionItems;
-  final String category;
-
-  const NutritionCategoryLoaded(this.nutritionItems, this.category);
-
-  @override
-  List<Object?> get props => [nutritionItems, category];
-}
-
-class MealPlanDetailsLoaded extends NutritionState {
-  final MealPlan mealPlan;
-
-  const MealPlanDetailsLoaded(this.mealPlan);
-
-  @override
-  List<Object?> get props => [mealPlan];
-}
-
-class MealPlanCreated extends NutritionState {
-  final MealPlan mealPlan;
-
-  const MealPlanCreated(this.mealPlan);
-
-  @override
-  List<Object?> get props => [mealPlan];
-}
 
 class NutritionPlansLoaded extends NutritionState {
   final List<NutritionPlan> nutritionPlans;
@@ -67,6 +31,33 @@ class NutritionPlanDetailLoaded extends NutritionState {
 
   @override
   List<Object> get props => [nutritionPlan];
+}
+
+class NutritionGoalsLoaded extends NutritionState {
+  final List<String> goals;
+
+  const NutritionGoalsLoaded(this.goals);
+
+  @override
+  List<Object> get props => [goals];
+}
+
+class MealPlansLoaded extends NutritionState {
+  final List<MealPlan> mealPlans;
+
+  const MealPlansLoaded(this.mealPlans);
+
+  @override
+  List<Object?> get props => [mealPlans];
+}
+
+class MealPlanLoaded extends NutritionState {
+  final List<Meal> meals;
+
+  const MealPlanLoaded(this.meals);
+
+  @override
+  List<Object> get props => [meals];
 }
 
 class NutritionError extends NutritionState {

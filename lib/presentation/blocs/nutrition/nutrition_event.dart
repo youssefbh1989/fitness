@@ -1,40 +1,11 @@
 import 'package:equatable/equatable.dart';
-import '../../../domain/entities/nutrition.dart';
+import '../../../domain/entities/meal.dart';
 
 abstract class NutritionEvent extends Equatable {
   const NutritionEvent();
 
   @override
   List<Object?> get props => [];
-}
-
-class GetMealPlansEvent extends NutritionEvent {}
-
-class GetNutritionByCategoryEvent extends NutritionEvent {
-  final String category;
-
-  const GetNutritionByCategoryEvent(this.category);
-
-  @override
-  List<Object?> get props => [category];
-}
-
-class GetMealPlanDetailsEvent extends NutritionEvent {
-  final String id;
-
-  const GetMealPlanDetailsEvent(this.id);
-
-  @override
-  List<Object?> get props => [id];
-}
-
-class CreateMealPlanEvent extends NutritionEvent {
-  final MealPlan mealPlan;
-
-  const CreateMealPlanEvent(this.mealPlan);
-
-  @override
-  List<Object?> get props => [mealPlan];
 }
 
 class GetNutritionPlans extends NutritionEvent {
@@ -50,13 +21,13 @@ class GetNutritionPlanById extends NutritionEvent {
   List<Object> get props => [id];
 }
 
-class LoadNutritionPlans extends NutritionEvent {
-  final String userId;
+class GetNutritionPlansByGoal extends NutritionEvent {
+  final String goal;
 
-  const LoadNutritionPlans({required this.userId});
+  const GetNutritionPlansByGoal(this.goal);
 
   @override
-  List<Object> get props => [userId];
+  List<Object> get props => [goal];
 }
 
 class GetNutritionGoals extends NutritionEvent {
@@ -81,4 +52,35 @@ class DeleteMealEvent extends NutritionEvent {
 
   @override
   List<Object> get props => [mealId];
+}
+
+class FetchMealPlanEvent extends NutritionEvent {
+  final String day;
+  const FetchMealPlanEvent({required this.day});
+
+  @override
+  List<Object> get props => [day];
+}
+
+class AddMealEvent extends NutritionEvent {
+  final Meal meal;
+  final String day;
+  const AddMealEvent({required this.meal, required this.day});
+
+  @override
+  List<Object> get props => [meal, day];
+}
+
+class GenerateMealPlanEvent extends NutritionEvent {
+  final String day;
+  final int calories;
+  final String dietType;
+  const GenerateMealPlanEvent({
+    required this.day,
+    required this.calories,
+    required this.dietType,
+  });
+
+  @override
+  List<Object> get props => [day, calories, dietType];
 }
