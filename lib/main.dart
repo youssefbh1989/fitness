@@ -16,14 +16,7 @@ import 'presentation/blocs/nutrition/nutrition_bloc.dart';
 import 'presentation/blocs/workout_tracker/workout_tracker_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/size_config.dart';
-import 'presentation/screens/nutrition_screen.dart';
-import 'presentation/screens/workout_details_screen.dart';
-import 'presentation/screens/settings_screen.dart';
-import 'presentation/screens/progress_tracking_screen.dart';
-import 'presentation/screens/workout_session_screen.dart';
-import 'domain/entities/user.dart';
-import 'domain/entities/workout.dart';
-import 'domain/entities/exercise.dart';
+
 
 
 void main() async {
@@ -205,132 +198,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 }
 
 
-// Placeholder implementations -  Replace with actual implementations
-class NutritionScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Nutrition')), body: const Center(child: Text('Nutrition Screen')));
-  }
-}
-
-
-class WorkoutDetailsScreen extends StatelessWidget {
-  final Workout workout;
-  const WorkoutDetailsScreen({super.key, required this.workout});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text(workout.name)), body: ListView.builder(
-      itemCount: workout.exercises.length,
-      itemBuilder: (context, index) {
-          final exercise = workout.exercises[index];
-          return ListTile(title: Text(exercise.name));
-        },
-    ));
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Settings')), body: const Center(child: Text('Settings Screen')));
-  }
-}
-
-class ProgressTrackingScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Progress')), body: const Center(child: Text('Progress Tracking Screen')));
-  }
-}
-
-class WorkoutSessionScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: const Text('Workout Session')), body: const Center(child: Text('Workout Session Screen')));
-  }
-}
-
-
-// AppRouter implementation - needs significant expansion
-class AppRouter {
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case '/':
-        return MaterialPageRoute(builder: (_) => const HomeScreen()); //Needs HomeScreen implementation
-      case '/nutrition':
-        return MaterialPageRoute(builder: (_) => const NutritionScreen());
-      case '/workoutDetails':
-        return MaterialPageRoute(builder: (_) => const WorkoutDetailsScreen(workout: Workout(name: "Workout 1", exercises: [Exercise(name: "Exercise 1")])));
-      case '/settings':
-        return MaterialPageRoute(builder: (_) => const SettingsScreen());
-      case '/progress':
-        return MaterialPageRoute(builder: (_) => const ProgressTrackingScreen());
-      case '/workoutSession':
-        return MaterialPageRoute(builder: (_) => const WorkoutSessionScreen());
-      default:
-        return MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('404 Not Found'))));
-    }
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('FitBody')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/nutrition'), child: const Text('Nutrition')),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/workoutDetails'), child: const Text('Workout Details')),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/settings'), child: const Text('Settings')),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/progress'), child: const Text('Progress')),
-            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/workoutSession'), child: const Text('Start Workout')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//DeepLinkHandler - needs implementation
-class DeepLinkHandler {
-  final NavigatorState navigator;
-  DeepLinkHandler({required this.navigator});
-  Future<void> init() async {}
-}
-
-// Missing Blocs, Events, and States - needs implementation for all blocs
-class CheckAuthStatusEvent {}
-class LoadSettingsEvent {}
-class GetUserProfileEvent {}
-class FetchWorkoutsEvent {}
-class SettingsLoaded extends SettingsState {
-  final Settings settings;
-  SettingsLoaded({required this.settings});
-}
-class SettingsState {}
-
-
-class Settings {
-  final bool darkMode;
-  final String language;
-  Settings({required this.darkMode, required this.language});
-}
-
-class AppError {
-  final String friendlyMessage;
-  AppError({required this.friendlyMessage});
-}
-
-class ErrorHandler {
-  final StreamController<AppError?> _errorStreamController = StreamController<AppError?>.broadcast();
-  Stream<AppError> get errorStream => _errorStreamController.stream.whereType<AppError>();
-  void dispose() { _errorStreamController.close(); }
-  static void showErrorSnackBar(BuildContext context, String message) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-    }
-}
+// Use actual screen implementations from presentation/screens
+import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'dart:async';

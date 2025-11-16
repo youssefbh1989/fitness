@@ -12,7 +12,36 @@ author = 40001747
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "export PATH=\"$PATH:`pwd`/flutter/bin\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "flutter pub get"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "flutter run -d web-server --web-hostname=0.0.0.0 --web-port=3000"
+
+[[workflows.workflow]]
+name = "Install Flutter"
+author = 40001747
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "git clone https://github.com/flutter/flutter.git -b stable --depth 1"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export PATH=\"$PATH:`pwd`/flutter/bin\""
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "flutter doctor"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "flutter config --enable-web"
 
 [agent]
 expertMode = true
