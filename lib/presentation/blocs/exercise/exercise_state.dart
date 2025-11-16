@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/exercise.dart';
 
@@ -37,7 +36,16 @@ class ExerciseCategoriesLoaded extends ExerciseState {
   const ExerciseCategoriesLoaded(this.categories);
 
   @override
-  List<Object?> get props => [categories];
+  List<Object> get props => [categories];
+}
+
+class ExerciseSearchResults extends ExerciseState {
+  final List<Exercise> exercises;
+  final String query;
+  const ExerciseSearchResults(this.exercises, this.query);
+
+  @override
+  List<Object> get props => [exercises, query];
 }
 
 class MuscleGroupsLoaded extends ExerciseState {

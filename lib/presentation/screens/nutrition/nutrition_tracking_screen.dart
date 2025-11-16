@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/utils/size_config.dart';
@@ -86,9 +85,10 @@ class NutritionTrackingScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to add meal screen
+          Navigator.pushNamed(context, '/add-meal');
         },
         child: const Icon(Icons.add),
+        tooltip: 'Log Meal',
       ),
     );
   }

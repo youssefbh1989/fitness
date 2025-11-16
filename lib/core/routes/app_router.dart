@@ -12,6 +12,11 @@ import '../../presentation/screens/settings/notifications_settings_screen.dart';
 import '../../presentation/screens/settings/sync_settings_screen.dart'; // Added import
 import '../../presentation/screens/settings/data_export_import_screen.dart'; // Added import
 import '../../presentation/screens/progress/body_measurements_screen.dart'; // Added import
+import 'package:flutter_bloc/flutter_bloc.dart'; // Added import for BlocProvider
+import '../../../../injection_container.dart'; // Added import for sl
+import '../../presentation/bloc/exercise/exercise_bloc.dart'; // Added import for ExerciseBloc
+import '../../presentation/screens/search/search_screen.dart'; // Added import for SearchScreen
+import '../../presentation/screens/nutrition/add_meal_screen.dart'; // Added import for AddMealScreen
 
 
 class AppRouter {
@@ -43,6 +48,17 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const DataExportImportScreen());
       case '/body_measurements':
         return MaterialPageRoute(builder: (_) => const BodyMeasurementsScreen());
+      case '/search':
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => sl<ExerciseBloc>(),
+            child: const SearchScreen(),
+          ),
+        );
+      case '/add-meal':
+        return MaterialPageRoute(
+          builder: (_) => const AddMealScreen(),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

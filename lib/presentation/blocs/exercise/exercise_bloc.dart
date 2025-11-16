@@ -23,6 +23,7 @@ class ExerciseBloc extends Bloc<ExerciseEvent, ExerciseState> {
     on<GetExerciseByIdEvent>(_onGetExerciseById);
     on<GetExercisesByCategoryEvent>(_onGetExercisesByCategory);
     on<GetExerciseCategoriesEvent>(_onGetExerciseCategories);
+    on<SearchExercisesEvent>(_onSearchExercises);
   }
 
   Future<void> _onGetExercises(
@@ -70,6 +71,27 @@ class ExerciseBloc extends Bloc<ExerciseEvent, ExerciseState> {
     result.fold(
       (failure) => emit(ExerciseError(failure.message)),
       (categories) => emit(ExerciseCategoriesLoaded(categories)),
+    );
+  }
+
+  Future<void> _onSearchExercises(
+    SearchExercisesEvent event,
+    Emitter<ExerciseState> emit,
+  ) async {
+    emit(ExerciseLoading());
+    final result = await getExercisesUseCase();
+    result.fold(
+      (failure) => emit(ExerciseError(failure.message)),
+      (exercises) {
+        final query = event.query.toLowerCase();
+        final filteredExercises = exercises.where((exercise) {
+          return exercise.name.toLowerCase().contains(query) ||
+              exercise.description.toLowerCase().contains(query) ||
+              exercise.category.toLowerCase().contains(query) ||
+              exercise.muscleGroup.toLowerCase().contains(query);
+        }).toList();
+        emit(ExerciseSearchResults(filteredExercises, event.query));
+      },
     );
   }
 }

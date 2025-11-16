@@ -58,3 +58,27 @@ class LoadNutritionPlans extends NutritionEvent {
   @override
   List<Object> get props => [userId];
 }
+
+class GetNutritionGoals extends NutritionEvent {
+  const GetNutritionGoals();
+}
+
+class LogMealEvent extends NutritionEvent {
+  final Meal meal;
+  const LogMealEvent({required this.meal});
+
+  @override
+  List<Object> get props => [meal];
+}
+
+class GetTodayMealsEvent extends NutritionEvent {
+  const GetTodayMealsEvent();
+}
+
+class DeleteMealEvent extends NutritionEvent {
+  final String mealId;
+  const DeleteMealEvent({required this.mealId});
+
+  @override
+  List<Object> get props => [mealId];
+}

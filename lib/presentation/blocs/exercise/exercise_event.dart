@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 abstract class ExerciseEvent extends Equatable {
@@ -37,6 +36,16 @@ class GetExercisesByMuscleGroupEvent extends ExerciseEvent {
   List<Object?> get props => [muscleGroup];
 }
 
-class GetExerciseCategoriesEvent extends ExerciseEvent {}
+class GetExerciseCategoriesEvent extends ExerciseEvent {
+  const GetExerciseCategoriesEvent();
+}
+
+class SearchExercisesEvent extends ExerciseEvent {
+  final String query;
+  const SearchExercisesEvent(this.query);
+
+  @override
+  List<Object> get props => [query];
+}
 
 class GetMuscleGroupsEvent extends ExerciseEvent {}
