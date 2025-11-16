@@ -119,6 +119,30 @@ class MealPlan extends Equatable {
     );
   }
 
+  MealPlan copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? imageUrl,
+    List<DailyMeal>? dailyMeals,
+    int? totalCalories,
+    double? totalProtein,
+    double? totalCarbs,
+    double? totalFat,
+  }) {
+    return MealPlan(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      dailyMeals: dailyMeals ?? this.dailyMeals,
+      totalCalories: totalCalories ?? this.totalCalories,
+      totalProtein: totalProtein ?? this.totalProtein,
+      totalCarbs: totalCarbs ?? this.totalCarbs,
+      totalFat: totalFat ?? this.totalFat,
+    );
+  }
+
   @override
   List<Object?> get props => [id, name, description, imageUrl, dailyMeals, totalCalories, totalProtein, totalCarbs, totalFat];
 }
@@ -147,6 +171,18 @@ class DailyMeal extends Equatable {
       id: json['id'],
       day: json['day'],
       meals: (json['meals'] as List).map((m) => MealPlanItem.fromJson(m)).toList(),
+    );
+  }
+
+  DailyMeal copyWith({
+    String? id,
+    String? day,
+    List<MealPlanItem>? meals,
+  }) {
+    return DailyMeal(
+      id: id ?? this.id,
+      day: day ?? this.day,
+      meals: meals ?? this.meals,
     );
   }
 
@@ -207,6 +243,32 @@ class MealPlanItem extends Equatable {
       time: json['time'],
       imageUrl: json['imageUrl'],
       ingredients: List<String>.from(json['ingredients']),
+    );
+  }
+
+  MealPlanItem copyWith({
+    String? id,
+    String? name,
+    String? type,
+    int? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+    String? time,
+    String? imageUrl,
+    List<String>? ingredients,
+  }) {
+    return MealPlanItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+      time: time ?? this.time,
+      imageUrl: imageUrl ?? this.imageUrl,
+      ingredients: ingredients ?? this.ingredients,
     );
   }
 
