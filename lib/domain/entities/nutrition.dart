@@ -99,34 +99,74 @@ class Meal extends Equatable {
 class Nutrition extends Equatable {
   final String id;
   final String name;
+  final String description;
   final String imageUrl;
-  final String category;
   final int calories;
   final double protein;
   final double carbs;
   final double fat;
-  final List<String> ingredients;
-  final List<String> instructions;
-  final int preparationTime;
-  final bool isFavorite;
+  final String category;
+  final String servingSize;
+  final List<String>? ingredients;
+  final String? instructions;
 
   const Nutrition({
     required this.id,
     required this.name,
+    required this.description,
     required this.imageUrl,
-    required this.category,
     required this.calories,
     required this.protein,
     required this.carbs,
     required this.fat,
-    required this.ingredients,
-    required this.instructions,
-    required this.preparationTime,
-    this.isFavorite = false,
+    required this.category,
+    required this.servingSize,
+    this.ingredients,
+    this.instructions,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'imageUrl': imageUrl,
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+      'category': category,
+      'servingSize': servingSize,
+      'ingredients': ingredients,
+      'instructions': instructions,
+    };
+  }
+
+  factory Nutrition.fromJson(Map<String, dynamic> json) {
+    return Nutrition(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      imageUrl: json['imageUrl'],
+      calories: json['calories'],
+      protein: json['protein'].toDouble(),
+      carbs: json['carbs'].toDouble(),
+      fat: json['fat'].toDouble(),
+      category: json['category'],
+      servingSize: json['servingSize'],
+      ingredients: json['ingredients'] != null
+          ? List<String>.from(json['ingredients'])
+          : null,
+      instructions: json['instructions'],
+    );
+  }
+
   @override
-  List<Object?> get props => [id, name, imageUrl, category, calories, protein, carbs, fat, ingredients, instructions, preparationTime, isFavorite];
+  List<Object?> get props => [
+    id, name, description, imageUrl, calories,
+    protein, carbs, fat, category, servingSize,
+    ingredients, instructions
+  ];
 }
 
 class NutritionItem extends Equatable {

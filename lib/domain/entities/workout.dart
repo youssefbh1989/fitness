@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'exercise.dart';
 
 class Workout extends Equatable {
   final String id;
@@ -10,6 +11,8 @@ class Workout extends Equatable {
   final List<Exercise> exercises;
   final String category;
   final bool isPremium;
+  final int? calories;
+  final bool isFavorite;
 
   const Workout({
     required this.id,
@@ -21,6 +24,8 @@ class Workout extends Equatable {
     required this.exercises,
     required this.category,
     this.isPremium = false,
+    this.calories,
+    this.isFavorite = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -34,6 +39,8 @@ class Workout extends Equatable {
       'exercises': exercises.map((e) => e.toJson()).toList(),
       'category': category,
       'isPremium': isPremium,
+      'calories': calories,
+      'isFavorite': isFavorite,
     };
   }
 
@@ -50,70 +57,42 @@ class Workout extends Equatable {
           .toList(),
       category: json['category'],
       isPremium: json['isPremium'] ?? false,
+      calories: json['calories'],
+      isFavorite: json['isFavorite'] ?? false,
+    );
+  }
+
+  Workout copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? imageUrl,
+    String? level,
+    int? duration,
+    List<Exercise>? exercises,
+    String? category,
+    bool? isPremium,
+    int? calories,
+    bool? isFavorite,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      level: level ?? this.level,
+      duration: duration ?? this.duration,
+      exercises: exercises ?? this.exercises,
+      category: category ?? this.category,
+      isPremium: isPremium ?? this.isPremium,
+      calories: calories ?? this.calories,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
   @override
   List<Object?> get props => [
     id, title, description, imageUrl, level, 
-    duration, exercises, category, isPremium
-  ];
-}
-
-class Exercise extends Equatable {
-  final String id;
-  final String name;
-  final String description;
-  final String imageUrl;
-  final String? videoUrl;
-  final int sets;
-  final int reps;
-  final int? duration; // seconds
-  final String equipment;
-
-  const Exercise({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-    this.videoUrl,
-    required this.sets,
-    required this.reps,
-    this.duration,
-    required this.equipment,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'imageUrl': imageUrl,
-      'videoUrl': videoUrl,
-      'sets': sets,
-      'reps': reps,
-      'duration': duration,
-      'equipment': equipment,
-    };
-  }
-
-  factory Exercise.fromJson(Map<String, dynamic> json) {
-    return Exercise(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      imageUrl: json['imageUrl'],
-      videoUrl: json['videoUrl'],
-      sets: json['sets'],
-      reps: json['reps'],
-      duration: json['duration'],
-      equipment: json['equipment'],
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    id, name, description, imageUrl, videoUrl, 
-    sets, reps, duration, equipment
+    duration, exercises, category, isPremium, calories, isFavorite
   ];
 }
